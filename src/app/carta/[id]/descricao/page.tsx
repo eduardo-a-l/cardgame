@@ -16,7 +16,7 @@ const params = useParams<{id: string}>();
 return (
     <div className="flex flex-col bg-custom-blue items-center w-screen h-screen relative">
 
-        <button className=" flex justify-center w-40 h-10 cursor-pointer hover:scale-105 transition-all gap-1.5 text-4xl mt-10 ml-10 absolute left-0 top-0">
+        <button className=" flex justify-center w-40 h-10 cursor-pointer hover:scale-105 transition-all gap-1.5 text-4xl mt-10 ml-10 absolute left-0 top-0 text-white">
             <Back/>
             Voltar
         </button>

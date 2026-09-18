@@ -6,6 +6,9 @@
 
   --custom-blue: #1B1B2F;
 
+  --Max-width: 1400px;
+
+  --blue: #1B1B2F;
 }
 
 @theme inline {
@@ -13,6 +16,9 @@
   --color-custom-blue: var(--custom-blue);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+ 
+  --color-blue: var(--blue);
+  --max-width-custom: var(--Max-width);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
@@ -28,4 +34,31 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+.inventory-scrollbar::-webkit-scrollbar {
+  width: 10px;
+}
+
+.inventory-scrollbar::-webkit-scrollbar-track {
+    background: #1B1B2F;
+    border-radius: 10px;
+}
+
+.inventory-scrollbar::-webkit-scrollbar-thumb {
+    background: #21366B;
+    border-radius: 10px;
+}
+
+.inventory-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #C8911A;
+}  
+
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+h2, h1, p {
+  color: white;
 }

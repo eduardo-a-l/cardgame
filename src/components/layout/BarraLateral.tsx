@@ -16,7 +16,7 @@ export function BarraLateral({
 
   return (
     <aside
-      className="w-16 h-screen flex flex-col justify-between items-center py-4 border-r"
+      className="w-16 h-screen flex flex-col justify-between items-center py-4 border-r text-black"
       style={{
         backgroundColor: corDeFundo,
         borderColor: corDaBorda,
@@ -24,7 +24,7 @@ export function BarraLateral({
     >
       <div className="flex flex-col gap-3">
         <BotaoIcone nomeIcone="leaderboard" onClick={() => ""} />
-        <BotaoIcone nomeIcone="usuario" onClick={() => ""} />
+        <BotaoIcone nomeIcone="usuario" onClick={() => router.push("/login")} />
       </div>
 
       <BotaoIcone

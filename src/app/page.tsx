@@ -1,8 +1,13 @@
+"use client";
+
+import { useRouter } from "next/navigation";
 import { BarraLateral } from "@/components/layout/BarraLateral";
 import { Botao } from "@/components/ui/Botao";
 import Logo from "@/assets/logo.svg";
 
 export default function PaginaPrincipal() {
+  const router = useRouter();
+
   return (
     <main className="flex h-screen bg-[#1B1B2F] relative overflow-hidden">
       <div className="z-10">
@@ -16,6 +21,7 @@ export default function PaginaPrincipal() {
           tamanhoIcone={40}
           corDoTexto="#FFFFFF"
           className="-ml-1 rounded-l-none px-30 py-10 text-xl"
+          onClick={() => router.push("/selecionar-oponente")}
         />
         <Botao
           texto="Inventário"
@@ -23,6 +29,7 @@ export default function PaginaPrincipal() {
           tamanhoIcone={40}
           corDoTexto="#FFFFFF"
           className="-ml-1 rounded-l-none px-30 py-10 text-xl"
+          onClick={() => router.push("/inventario")}
         />
         <Botao
           texto="Baralhos"
@@ -33,7 +40,7 @@ export default function PaginaPrincipal() {
         />
       </div>
 
-      <div className="absolute inset-0 flex items-center justify-center -mr-50">
+      <div className="absolute inset-0 flex items-center justify-center -mr-50 pointer-events-none">
         <Logo className="w-auto h-auto" />
       </div>
 
