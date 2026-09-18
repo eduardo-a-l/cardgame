@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { Botao } from "@/components/ui/Botao";
+import { Icone } from "@/components/ui/Icone";
 
 export default function TelaLeaderboard() {
   const router = useRouter();
@@ -14,6 +15,7 @@ export default function TelaLeaderboard() {
     { usuario: "Usuário05", pontos: 1000, moedas: 70 },
     { usuario: "Usuário06", pontos: 928, moedas: 21 },
     { usuario: "Usuário07", pontos: 928, moedas: 5 },
+    { usuario: "Usuário08", pontos: 22, moedas: 5 },
   ];
 
   const jogadoresOrdenados = [...jogadores].sort(
@@ -46,25 +48,25 @@ export default function TelaLeaderboard() {
    };
 
   return (
-    <main className="relative h-screen bg-[#1B1B2F] overflow-hidden">
-      <div className="absolute m-10">
-        <Botao
-          texto="Voltar"
-          nomeIcone="voltar"
-          tamanhoIcone={40}
-          corDoTexto="#FFFFFF"
-          corDeFundo="transparent"
-          corDaBorda="transparent"
-          className="px-0 py-0 text-3xl"
-          onClick={() => router.push("/")}
-        />
-      </div>
+    <main className="relative flex h-screen flex-col bg-[#1B1B2F] overflow-hidden">
+    <div className="absolute m-10">
+      <Botao
+        texto="Voltar"
+        nomeIcone="voltar"
+        tamanhoIcone={40}
+        corDoTexto="#FFFFFF"
+        corDeFundo="transparent"
+        corDaBorda="transparent"
+        className="px-0 py-0 text-3xl"
+        onClick={() => router.push("/")}
+      />
+    </div>
 
-      <h1 className="pt-20 text-center text-4xl text-white">
-        Leaderboard
-      </h1>
+    <h1 className="pt-20 text-center text-4xl text-white">
+      Leaderboard
+    </h1>
 
-    <div className="divRanking">
+    <div className="divRanking inventory-scrollbar min-h-0 flex-1 overflow-y-auto pt-20">
       <table className="ranking">
         <thead>
           <tr>
@@ -76,20 +78,19 @@ export default function TelaLeaderboard() {
         </thead>
 
         <tbody>
-            {ranking.map((jogador, index) => (
-                <tr key={index}>
-                <td className={corPosicao(jogador.posicao)}>
-                    {jogador.posicao}º
-                </td>
-                <td>{jogador.usuario}</td>
-                <td>{jogador.pontos}</td>
-                <td>{jogador.moedas}G</td>
-                </tr>
-            ))}
+          {ranking.map((jogador, index) => (
+            <tr key={index}>
+              <td className={corPosicao(jogador.posicao)}>
+                {jogador.posicao}º
+              </td>
+              <td>{jogador.usuario}</td>
+              <td>{jogador.pontos}</td>
+              <td>{jogador.moedas}G</td>
+            </tr>
+          ))}
         </tbody>
       </table>
     </div>
-      
-    </main>
+  </main>
   );
 }
