@@ -76,6 +76,7 @@ export default function Selecionar_oponente() {
             <Botao
               texto="Continuar"
               className="w-50 cursor-pointer  h-14 text-3xl place-content-center bg-blue-900 rounded-md border-3 border-amber-400 mt-60 hover:scale-105 transition-all"
+              onClick={() => router.push("/selecionar-baralho")}
             ></Botao>
           </div>
         </div>
