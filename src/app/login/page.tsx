@@ -64,7 +64,7 @@ export default function TelaLogin() {
                             texto="Entrar" 
                             corDoTexto="#FFFFFF" 
                             className="flex-1 py-4 text-2xl flex items-center justify-center text-center" 
-                            onClick={() => {}} 
+                            onClick={() => { router.push("/perfil") }} 
                         />
                         <Botao 
                             type="button" 

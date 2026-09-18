@@ -10,6 +10,9 @@ import IconeLoja from "@/assets/icons/shop.svg";
 import IconeVoltar from "@/assets/icons/back.svg";
 import IconeNovo from "@/assets/icons/plus.svg";
 import IconeParaBaixo from "@/assets/icons/down.svg";
+import IconeLanca from "@/assets/icons/lanca.svg";
+import IconeEspada from "@/assets/icons/espada.svg";
+import IconeCadeado from "@/assets/icons/cadeado.svg";
 
 const icones = {
   leaderboard: IconeLeaderboard,
@@ -22,6 +25,9 @@ const icones = {
   voltar: IconeVoltar,
   novo: IconeNovo,
   paraBaixo: IconeParaBaixo,
+  espada: IconeEspada,
+  lança: IconeLanca,
+  cadeado: IconeCadeado,
 } as const;
 
 export type NomeIcone = keyof typeof icones;
