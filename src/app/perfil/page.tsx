@@ -64,7 +64,7 @@ export default function TelaPerfil() {
 
                         <div className="flex flex-col mb-13"> 
 
-                            <label htmlFor="pinBatalha" className="text-[53px]">
+                            <label htmlFor="pinBatalha" className="text-[53px] text-white">
                                 Alterar PIN de Batalha:
                             </label>
                             <input
