@@ -2,7 +2,6 @@
 
 import { useRouter } from "next/navigation";
 import { Botao } from "@/components/ui/Botao";
-import { Icone } from "@/components/ui/Icone";
 
 export default function TelaLeaderboard() {
   const router = useRouter();
@@ -22,22 +21,16 @@ export default function TelaLeaderboard() {
     (a, b) => b.pontos - a.pontos
   );
 
-  let posicaoAnterior = 0;
-  let pontosAnteriores = 0;
+  const ranking = jogadoresOrdenados.map((jogador, index, jogadores) => {
+  const posicao =
+    jogadores.findIndex(
+      (outroJogador) => outroJogador.pontos === jogador.pontos
+    ) + 1;
 
-  const ranking = jogadoresOrdenados.map((jogador, index) => {
-    const posicao =
-      jogador.pontos === pontosAnteriores
-        ? posicaoAnterior
-        : index + 1;
-
-    posicaoAnterior = posicao;
-    pontosAnteriores = jogador.pontos;
-
-    return {
-      ...jogador,
-      posicao,
-    };
+  return {
+    ...jogador,
+    posicao,
+  };
   });
 
   const corPosicao = (posicao: number) => {
