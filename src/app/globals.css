@@ -101,6 +101,7 @@ h2, h1, p {
   .loja-container aside h2{
     margin-bottom: 2vh;
   }
+}
 .divRanking {
   display: flex;
   justify-content: center;
