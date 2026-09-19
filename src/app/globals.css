@@ -101,4 +101,49 @@ h2, h1, p {
   .loja-container aside h2{
     margin-bottom: 2vh;
   }
+.divRanking {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.ranking {
+  width: 80%;
+  margin: 20px;
+  border-collapse: collapse;
+  color: white;
+  border: 4px solid #263e77;
+}
+
+.ranking th {
+  background: #263e77;
+  text-align: left;
+  padding: 20px 32px;
+  font-size: 20px;
+}
+
+.ranking td {
+  padding: 28px 32px;
+  border-bottom: 4px solid #263e77;
+  font-size: 20px;
+}
+
+.ranking th:first-child,
+.ranking td:first-child {
+  width: 140px;
+}
+
+.ranking th:nth-child(3),
+.ranking td:nth-child(3),
+.ranking th:nth-child(4),
+.ranking td:nth-child(4) {
+  text-align: center;
+}
+
+.ranking td:nth-child(3) {
+  color: #42c866;
+}
+
+.ranking td:nth-child(4) {
+  color: #e5ad00;
 }

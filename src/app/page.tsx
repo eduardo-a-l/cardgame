@@ -20,7 +20,7 @@ export default function PaginaPrincipal() {
           nomeIcone="jogar"
           tamanhoIcone={40}
           corDoTexto="#FFFFFF"
-          className="-ml-1 rounded-l-none px-30 py-10 text-xl"
+          className="-ml-1 rounded-l-none px-30 py-10 text-xl -ml-3"
           onClick={() => router.push("/selecionar-oponente")}
         />
         <Botao
@@ -28,7 +28,7 @@ export default function PaginaPrincipal() {
           nomeIcone="inventario"
           tamanhoIcone={40}
           corDoTexto="#FFFFFF"
-          className="-ml-1 rounded-l-none px-30 py-10 text-xl"
+          className="-ml-1 rounded-l-none px-30 py-10 text-xl -ml-3"
           onClick={() => router.push("/inventario")}
         />
         <Botao
@@ -36,7 +36,7 @@ export default function PaginaPrincipal() {
           nomeIcone="baralho"
           tamanhoIcone={40}
           corDoTexto="#FFFFFF"
-          className="-ml-1 rounded-l-none px-30 py-10 text-xl "
+          className="-ml-1 rounded-l-none px-30 py-10 text-xl -ml-3"
         />
       </div>
 
@@ -52,7 +52,7 @@ export default function PaginaPrincipal() {
           corDeFundo="#C8911A"
           corDoTexto="#000000"
           corDaBorda="#686868"
-          className="rounded-r-none -mr-1 px-30 py-10 text-xl"
+          className="rounded-r-none -mr-3 px-30 py-10 text-xl"
           onClick={() => router.push("/loja")}
         />
       </div>
