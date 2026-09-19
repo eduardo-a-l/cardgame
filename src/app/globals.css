@@ -66,3 +66,39 @@ h2, h1, p {
 .text_dinheiro {
   color: #C8911A;
 }
+
+.loja-container {
+  height: 75vh;
+}
+
+.loja-container aside h2:hover{
+  color: #C8911A;
+}
+
+.header-loja .text_dinheiro, .botao-sair-loja {
+  width : clamp(100px,20.83vw,400px)
+}
+
+@media (max-width: 1105px) {
+  .header-loja .text_dinheiro, .botao-sair-loja {
+    width: clamp(100px,25vw,400px);
+  }
+  .header-loja .text_dinheiro {
+    text-align: end;
+  }
+}
+
+@media (max-height: 780px) {
+  .loja-container {
+    height: 70vh;
+  }
+  .loja-container aside h2{
+    margin-bottom: 4.5vh;
+  }
+}
+
+@media (max-height: 520px) {
+  .loja-container aside h2{
+    margin-bottom: 2vh;
+  }
+}
