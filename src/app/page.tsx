@@ -52,7 +52,8 @@ export default function PaginaPrincipal() {
           corDeFundo="#C8911A"
           corDoTexto="#000000"
           corDaBorda="#686868"
-          className="rounded-r-none -mr-1 px-30 py-10 text-xl -mr-3"
+          className="rounded-r-none -mr-3 px-30 py-10 text-xl"
+          onClick={() => router.push("/loja")}
         />
       </div>
     </main>

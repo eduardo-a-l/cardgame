@@ -53,14 +53,14 @@ export default function TelaInventario() {
 
             </div>
             
-            <div className="w-[85vw] h-[75vh] mt-12 overflow-y-auto inventory-scrollbar">
+            <div className="h-[75vh] w-[95vw] md:w-[90vw] xl:w-[85vw] mt-12 overflow-y-auto inventory-scrollbar">
 
-                <div className="grid grid-cols-5 gap-15">
+                <div className="grid grid-cols-5 gap-[3vw] justify-items-center">
 
                     {nomes.map((nome, index) => (
                         <div 
                             key={index} 
-                            className="w-[209px] h-[301.4px] bg-[#21366B] border-[5px] border-[#686868] rounded-[33px] shadow-sm flex items-center justify-center text-white text-[38px] text-center"
+                            className="w-full max-w-[209px] aspect-[209/301.4] bg-[#21366B] border-[5px] border-[#686868] rounded-[33px] shadow-sm flex items-center justify-center text-white text-[38px] text-center"
                         >
                             {nome}
                         </div>
