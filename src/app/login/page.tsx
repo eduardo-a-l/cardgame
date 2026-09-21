@@ -170,6 +170,7 @@ export default function TelaLogin() {
                                 type="password"
                                 name="senha"
                                 id="senha"
+                                maxLength={50}
                                 value={senha}
                                 onChange={(e) => setSenha(e.target.value)}
                                 className="mt-1 block w-full px-4 py-3 bg-[#262647] border border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-white outline-none"
