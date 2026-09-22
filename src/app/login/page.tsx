@@ -106,6 +106,8 @@ export default function TelaLogin() {
                 })
             );
 
+            window.dispatchEvent(new Event("usuarioAtualizado"));
+
             router.push("/perfil");
         } catch (erro) {
             console.error(erro);
