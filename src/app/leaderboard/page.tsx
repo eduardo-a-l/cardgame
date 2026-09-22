@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Botao } from "@/components/ui/Botao";
+import Image from "next/image";
 
 interface Jogador {
   IDUSUARIO: number;
@@ -100,9 +101,12 @@ export default function TelaLeaderboard() {
                 <td>
                   <div className="flex items-center gap-3">
                     {jogador.FOTOPERFIL ? (
-                      <img
+                      <Image
                         src={`http://localhost:8081${jogador.FOTOPERFIL}`}
                         alt="Foto de perfil"
+                        width={40}
+                        height={40}
+                        unoptimized
                         className="h-10 w-10 rounded-full object-cover"
                       />
                     ) : (
