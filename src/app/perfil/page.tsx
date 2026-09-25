@@ -1,11 +1,11 @@
 "use client";
 
-import Image from "next/image";
 import { NomeIcone } from "@/components/ui/Icone";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Botao } from "@/components/ui/Botao";
 import { Icone } from "@/components/ui/Icone";
+import { FotoPerfil } from "@/components/ui/FotoPerfil";
 
 interface Usuario {
     IDUSUARIO: number;
@@ -15,7 +15,6 @@ interface Usuario {
     VITORIAS: number;
     DERROTAS: number;
     PINBATALHA: number;
-    FOTOPERFIL: string | null;
 }
 
 export default function TelaPerfil() {
@@ -146,13 +145,6 @@ export default function TelaPerfil() {
                 throw new Error("Erro ao atualizar foto");
             }
 
-            const dados = await response.json();
-
-            setUsuario({
-                ...usuario,
-                FOTOPERFIL: dados.FOTOPERFIL
-            });
-
             setFotoAtualizada((valor) => valor + 1);
 
             window.dispatchEvent(
@@ -212,18 +204,11 @@ export default function TelaPerfil() {
                                 className="cursor-pointer flex flex-col items-center"
                             >
 
-                                {usuario.FOTOPERFIL ? (
-                                    <Image
-                                        src={`http://localhost:8081${usuario.FOTOPERFIL}?t=${fotoAtualizada}`}
-                                        alt="Foto de perfil"
-                                        width={120}
-                                        height={120}
-                                        unoptimized
-                                        className="w-[120px] h-[120px] rounded-full object-cover"
-                                    />
-                                ) : (
-                                    <div className="w-[120px] h-[120px] rounded-full bg-gray-500" />
-                                )}
+                                <FotoPerfil
+                                    idUsuario={usuario.IDUSUARIO}
+                                    tamanho={120}
+                                    atualizacao={fotoAtualizada}
+                                />
 
                                 <span className="text-white text-sm mt-2">
                                     {enviandoFoto

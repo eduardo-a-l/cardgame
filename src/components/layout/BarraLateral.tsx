@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { BotaoIcone } from "@/components/ui/BotaoIcone";
-import Image from "next/image";
+import { FotoPerfil } from "@/components/ui/FotoPerfil";
 
 interface BarraLateralProps {
   corDeFundo?: string;
@@ -13,7 +13,6 @@ interface BarraLateralProps {
 interface Usuario {
   IDUSUARIO: number;
   NOMEUSUARIO: string;
-  FOTOPERFIL: string | null;
 }
 
 export function BarraLateral({
@@ -87,18 +86,7 @@ export function BarraLateral({
             onClick={() => router.push("/perfil")}
             className="flex flex-col items-center gap-1 w-14"
           >
-            {usuario.FOTOPERFIL ? (
-              <Image
-                src={`http://localhost:8081${usuario.FOTOPERFIL}`}
-                alt="Foto de perfil"
-                width={40}
-                height={40}
-                unoptimized
-                className="w-10 h-10 rounded-full object-cover"
-              />
-            ) : (
-              <div className="w-10 h-10 rounded-full bg-gray-500" />
-            )}
+            <FotoPerfil idUsuario={usuario.IDUSUARIO} />
 
             <span className="w-16 truncate text-[10px] font-semibold">
               {usuario.NOMEUSUARIO}
