@@ -61,7 +61,7 @@ export default function TelaLeaderboard() {
   };
 
   return (
-    <main className="relative flex h-screen flex-col bg-[#1B1B2F] overflow-hidden">
+    <main className="relative min-h-screen bg-[#1B1B2F]">
       <div className="absolute m-10">
         <Botao
           texto="Voltar"
@@ -79,7 +79,7 @@ export default function TelaLeaderboard() {
         Leaderboard
       </h1>
 
-      <div className="divRanking inventory-scrollbar min-h-0 flex-1 overflow-y-auto pt-20">
+      <div className="divRanking inventory-scrollbar pt-20 pb-20 overflow-x-auto">
         <table className="ranking">
           <thead>
             <tr>
