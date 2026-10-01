@@ -33,8 +33,10 @@ export default function MontarBaralhoPage() {
       </div>
      
       <div className="flex flex-col lg:flex-row justify-center items-center lg:items-start gap-16 my-6">
+
         {/* Seção de Baralho Atual de exemplo */}
         <div className="flex flex-col items-center">
+          
           <p className="text-3xl mb-6">Baralho Atual (8/20)</p>
 
           <div className="grid grid-cols-5 gap-3 p-3">

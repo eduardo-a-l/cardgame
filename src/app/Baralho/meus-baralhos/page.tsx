@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import Back from "@/components/ui/Back/Back";
 
 export default function MeusBaralhosPage() {
-    const router = useRouter();
+    const router = useRouter(); 
 
     return (
           <div className="flex flex-col bg-custom-blue items-center w-full min-h-screen relative">
@@ -21,36 +21,62 @@ export default function MeusBaralhosPage() {
                 <p className="text-3xl mb-12">Meus Baralhos</p>
             </div>
                 
-            <div className="flex flex-col justify-start w-150 h-96 overflow-auto"> {/* Container de Cards */}
-            
-                    <div className="flex flex-wrap gap-4 mt-4 justify-between w-150 p-2"> {/* Fileira de Cards */}
+           <div className="flex justify-center w-screen overflow-auto pl-40 "> {/* Container dos Cards */}
 
-                    <button className="text-white text-3xl mt-0.5 cursor-pointer transition-all hover:scale-105 ml-10 ">
-                        <div className="flex justify-center bg-blue-950 rounded-lg border-3 mr-20  border-gray-500 w-50 h-12"> {/*Card exemplo*/}
-                            <p className="text-white text-3xl pt-0.5">Baralho 1</p>
-                        </div> 
+            <div className="flex flex-col justify-start w-90 h-96 overflow-auto "> {/* Coluna de Cards */}
+            {
+                // Preencher com a API posteriormente
+               Array.from({ length: 5 }).map((_, i) => 
+                (
+                    <button key={i} className="bg-blue-950 border-2 rounded-md border-gray-500 transition-all hover:scale-105 cursor-pointer w-40 h-11 ml-3 text-2xl mt-5">
+                        <p>Baralho {i + 1}</p>
                     </button>
+                )
+                
 
-                </div>
+            )}
+
             </div>
 
-            <div className="flex w-full justify-around mt-25">
+            <div className="flex flex-col justify-start w-90 h-96 overflow-auto "> {/* Coluna de Cards */}
+            {
+                // Preencher com a API posteriormente
+               Array.from({ length: 5 }).map((_, i) => 
+                (
+                    <button key={i} className="bg-blue-950 border-2 rounded-md border-gray-500 transition-all hover:scale-105 cursor-pointer w-40 h-11 ml-3 text-2xl mt-5">
+                        <p>Baralho {i + 6}</p>
+                    </button>
+                )
+                
+
+            )}
+
+            </div>
+
+
+
+            </div>
+
+            <div className="flex w-full  mt-8 ">
                 <button 
                     onClick={() => router.push("/Baralho/montar-baralho")}
-                    className="flex flex-col items-center w-40 pt-1 h-12 cursor-pointer hover:scale-105 transition-all bg-blue-950 rounded-md border-2 border-amber-500 text-3xl"
+                    className="flex flex-col items-center w-50 pt-1 h-13 cursor-pointer hover:scale-105 transition-all bg-blue-950 rounded-md border-2 border-amber-500 text-4xl ml-auto"
                 >
                     <p>Editar</p> 
                 </button>
-                <button className="flex flex-col items-center w-40 h-12 cursor-pointer hover:scale-105 transition-all bg-blue-950 rounded-md border-2 border-amber-500 text-3xl pt-1">
+
+                <button className="flex flex-col items-center w-50 h-13 cursor-pointer hover:scale-105 transition-all bg-blue-950 rounded-md border-2 border-amber-500 text-4xl pt-1 ml-48  mr-auto">
                     <p>Excluir</p>
                 </button>
+
             </div>
 
             <button 
                 onClick={() => router.push("/Baralho/montar-baralho")}
-                className="flex flex-col items-center w-55 h-12 cursor-pointer hover:scale-105 transition-all bg-blue-950 rounded-md border-2 border-amber-500 text-3xl pt-1 mt-16"
+                className="flex flex-col items-center w-60 h-13 cursor-pointer hover:scale-105 transition-all bg-blue-950 rounded-md border-2 border-amber-500 text-4xl pt-1 mt-10"
             >
                 <p> + Criar Novo</p>
+
             </button>
 
             </div>
