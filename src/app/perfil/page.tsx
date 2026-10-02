@@ -284,7 +284,7 @@ export default function TelaPerfil() {
                     </div>
 
                     <div
-                        className="flex flex-col items-center gap-6"
+                        className="flex flex-col items-center justify-center gap-16"
                         style={{ width: "31.25vw" }}
                     >
 
