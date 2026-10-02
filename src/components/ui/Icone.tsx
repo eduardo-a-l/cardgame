@@ -34,7 +34,7 @@ export type NomeIcone = keyof typeof icones;
 
 interface IconeProps extends ComponentProps<"svg"> {
   nome: NomeIcone;
-  tamanho?: number;
+  tamanho?: number | string;
 }
 
 export function Icone({
