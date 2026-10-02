@@ -37,6 +37,7 @@ export default function PaginaPrincipal() {
           tamanhoIcone={40}
           corDoTexto="#FFFFFF"
           className="-ml-1 rounded-l-none px-30 py-10 text-xl -ml-3"
+          onClick={() => router.push("/Baralho/meus-baralhos")}
         />
       </div>
 
