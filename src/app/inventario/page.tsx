@@ -5,16 +5,16 @@ import { useRouter } from "next/navigation";
 import { Botao } from "@/components/ui/Botao";
 
 interface Carta {
-    IDINVENTARIO: number;
-    IDUSUARIO: number;
-    IDCARTA: number;
-    NOME: string;
-    TIPO: string;
-    RARIDADE: string;
-    PRECOPADRAO: number;
-    VIDA: number | null;
-    ACAO1: string | null;
-    ACAO2: string | null;
+    idInventario: number;
+    idUsuario: number;
+    idCarta: number;
+    nome: string;
+    tipo: string;
+    raridade: string;
+    precoPadrao: number;
+    vida: number | null;
+    acao1: string | null;
+    acao2: string | null;
 }
 
 export default function TelaInventario() {
@@ -90,10 +90,10 @@ export default function TelaInventario() {
 
                     {cartas.map((carta) => (
                         <div
-                            key={carta.IDINVENTARIO}
+                            key={carta.idInventario}
                             className="w-full max-w-[209px] aspect-[209/301.4] bg-[#21366B] border-[5px] border-[#686868] rounded-[33px] shadow-sm flex items-center justify-center text-white text-[38px] text-center"
                         >
-                            {carta.NOME}
+                            {carta.nome}
                         </div>
                     ))}
 
