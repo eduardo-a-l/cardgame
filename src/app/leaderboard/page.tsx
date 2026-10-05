@@ -6,10 +6,10 @@ import { Botao } from "@/components/ui/Botao";
 import { FotoPerfil } from "@/components/ui/FotoPerfil";
 
 interface Jogador {
-  IDUSUARIO: number;
-  NOMEUSUARIO: string;
-  PONTOS: number;
-  MOEDAS: number;
+  idUsuario: number;
+  nomeUsuario: string;
+  pontos: number;
+  moedas: number;
 }
 
 export default function TelaLeaderboard() {
@@ -38,13 +38,13 @@ export default function TelaLeaderboard() {
   }, []);
 
   const jogadoresOrdenados = [...jogadores].sort(
-    (a, b) => b.PONTOS - a.PONTOS
+    (a, b) => b.pontos - a.pontos
   );
 
   const ranking = jogadoresOrdenados.map((jogador, index, jogadores) => {
     const posicao =
       jogadores.findIndex(
-        (outroJogador) => outroJogador.PONTOS === jogador.PONTOS
+        (outroJogador) => outroJogador.pontos === jogador.pontos
       ) + 1;
 
     return {
@@ -92,21 +92,21 @@ export default function TelaLeaderboard() {
 
           <tbody>
             {ranking.map((jogador) => (
-              <tr key={jogador.IDUSUARIO}>
+              <tr key={jogador.idUsuario}>
                 <td className={corPosicao(jogador.posicao)}>
                   {jogador.posicao}º
                 </td>
 
                 <td>
                   <div className="flex items-center gap-3">
-                    <FotoPerfil idUsuario={jogador.IDUSUARIO} />
+                    <FotoPerfil idUsuario={jogador.idUsuario} />
 
-                    <span>{jogador.NOMEUSUARIO}</span>
+                    <span>{jogador.nomeUsuario}</span>
                   </div>
                 </td>
 
-                <td>{jogador.PONTOS}</td>
-                <td>{jogador.MOEDAS}G</td>
+                <td>{jogador.pontos}</td>
+                <td>{jogador.moedas}G</td>
               </tr>
             ))}
           </tbody>

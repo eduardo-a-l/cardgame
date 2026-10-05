@@ -11,8 +11,8 @@ interface BarraLateralProps {
 }
 
 interface Usuario {
-  IDUSUARIO: number;
-  NOMEUSUARIO: string;
+  idUsuario: number;
+  nomeUsuario: string;
 }
 
 export function BarraLateral({
@@ -86,10 +86,10 @@ export function BarraLateral({
             onClick={() => router.push("/perfil")}
             className="flex flex-col items-center gap-1 w-14"
           >
-            <FotoPerfil idUsuario={usuario.IDUSUARIO} />
+            <FotoPerfil idUsuario={usuario.idUsuario} />
 
             <span className="w-16 truncate text-[10px] font-semibold">
-              {usuario.NOMEUSUARIO}
+              {usuario.nomeUsuario}
             </span>
           </button>
         ) : (

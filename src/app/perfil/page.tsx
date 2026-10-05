@@ -8,13 +8,13 @@ import { Icone } from "@/components/ui/Icone";
 import { FotoPerfil } from "@/components/ui/FotoPerfil";
 
 interface Usuario {
-    IDUSUARIO: number;
-    NOMEUSUARIO: string;
-    PONTOS: number;
-    MOEDAS: number;
-    VITORIAS: number;
-    DERROTAS: number;
-    PINBATALHA: number;
+    idUsuario: number;
+    nomeUsuario: string;
+    pontos: number;
+    moedas: number;
+    vitorias: number;
+    derrotas: number;
+    pinBatalha: number;
 }
 
 export default function TelaPerfil() {
@@ -86,7 +86,7 @@ export default function TelaPerfil() {
 
         try {
             const response = await fetch(
-                `http://localhost:8081/Usuarios/${usuario.IDUSUARIO}/pinBatalha`,
+                `http://localhost:8081/Usuarios/${usuario.idUsuario}/pinBatalha`,
                 {
                     method: "PATCH",
                     headers: {
@@ -104,7 +104,7 @@ export default function TelaPerfil() {
 
             setUsuario({
                 ...usuario,
-                PINBATALHA: Number(input)
+                pinBatalha: Number(input)
             });
 
             setInput("");
@@ -134,7 +134,7 @@ export default function TelaPerfil() {
             formData.append("foto", arquivo);
 
             const response = await fetch(
-                `http://localhost:8081/Usuarios/${usuario.IDUSUARIO}/foto`,
+                `http://localhost:8081/Usuarios/${usuario.idUsuario}/foto`,
                 {
                     method: "PATCH",
                     body: formData
@@ -205,7 +205,7 @@ export default function TelaPerfil() {
                             >
 
                                 <FotoPerfil
-                                    idUsuario={usuario.IDUSUARIO}
+                                    idUsuario={usuario.idUsuario}
                                     tamanho={120}
                                     atualizacao={fotoAtualizada}
                                 />
@@ -228,13 +228,13 @@ export default function TelaPerfil() {
                             />
 
                             <h1 className="text-[clamp(40px,4vw,77px)] text-white">
-                                {usuario.NOMEUSUARIO}
+                                {usuario.nomeUsuario}
                             </h1>
 
                         </div>
 
                         <h2 className="text-[clamp(28px,2.083vw,40px)]">
-                            PIN de Batalha Atual: {String(usuario.PINBATALHA).padStart(4, "0")}
+                            PIN de Batalha Atual: {String(usuario.pinBatalha).padStart(4, "0")}
                         </h2>
 
                         <div className="flex flex-col mb-13">
@@ -289,19 +289,19 @@ export default function TelaPerfil() {
                     >
 
                         <h1 className="text-[clamp(40px,3.125vw,60px)]">
-                            Pontos: {usuario.PONTOS}
+                            Pontos: {usuario.pontos}
                         </h1>
 
                         <h1 className="text-[clamp(40px,3.125vw,60px)]">
-                            Moedas: {usuario.MOEDAS}G
+                            Moedas: {usuario.moedas}G
                         </h1>
 
                         <h1 className="text-[clamp(40px,3.125vw,60px)]">
-                            Vitórias: {usuario.VITORIAS}
+                            Vitórias: {usuario.vitorias}
                         </h1>
 
                         <h1 className="text-[clamp(40px,3.125vw,60px)]">
-                            Derrotas: {usuario.DERROTAS}
+                            Derrotas: {usuario.derrotas}
                         </h1>
 
                     </div>
