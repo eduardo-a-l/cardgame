@@ -182,11 +182,11 @@ export default function TelaPerfil() {
 
     function getCorDificuldade(dificuldade: string) {
         switch (dificuldade) {
-            case "Fácil": return "text-green-400 border-green-400";
-            case "Médio": return "text-yellow-400 border-yellow-400";
-            case "Difícil": return "text-orange-400 border-orange-400";
-            case "Difícil+": return "text-red-500 border-red-500";
-            default: return "text-gray-400 border-gray-400";
+            case "Fácil": return "text-green-400";
+            case "Médio": return "text-yellow-400";
+            case "Difícil": return "text-orange-400";
+            case "Difícil+": return "text-red-500";
+            default: return "text-gray-400";
         }
     }
 
@@ -372,7 +372,7 @@ export default function TelaPerfil() {
                                         {conquista.nome}
                                     </h1>
 
-                                    <span className={`text-[12px] px-2 py-0.5 rounded border my-1 ${getCorDificuldade(conquista.dificuldade)}`}>
+                                    <span className={`text-[12px] px-2 py-0.5 my-1 ${getCorDificuldade(conquista.dificuldade)}`}>
                                         {conquista.dificuldade}
                                     </span>
 
