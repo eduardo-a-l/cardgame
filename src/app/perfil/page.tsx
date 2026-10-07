@@ -17,29 +17,28 @@ interface Usuario {
     pinBatalha: number;
 }
 
+interface Conquista {
+    idConquista: number;
+    codigo: string;
+    nome: string;
+    descricao: string;
+    dificuldade: string;
+    icone: string;
+    desbloqueada: boolean;
+    dataDesbloqueio: string | null;
+}
+
 export default function TelaPerfil() {
     const router = useRouter();
 
     const [usuario, setUsuario] = useState<Usuario | null>(null);
+    const [conquistas, setConquistas] = useState<Conquista[]>([]);
     const [input, setInput] = useState("");
     const [erro, setErro] = useState("");
     const [carregando, setCarregando] = useState(true);
     const [salvandoPin, setSalvandoPin] = useState(false);
     const [enviandoFoto, setEnviandoFoto] = useState(false);
     const [fotoAtualizada, setFotoAtualizada] = useState(0);
-
-    const conquistas: [string, boolean][] = [
-        ["Espada", true],
-        ["Escudo", false],
-        ["Arco", false],
-        ["Poção", false],
-        ["Capacete", false],
-        ["Armadura", false],
-        ["Machado", false],
-        ["Lança", true],
-        ["Arco Mágico", false],
-        ["Anel", false]
-    ];
 
     useEffect(() => {
         async function carregarDados() {
@@ -62,8 +61,16 @@ export default function TelaPerfil() {
                 }
 
                 const dadosUsuario: Usuario = await responseUsuario.json();
-
                 setUsuario(dadosUsuario);
+
+                const responseConquistas = await fetch(
+                    `http://localhost:8081/Usuarios/${usuarioLocal.idUsuario}/conquistas`
+                );
+
+                if (responseConquistas.ok) {
+                    const dadosConquistas: Conquista[] = await responseConquistas.json();
+                    setConquistas(dadosConquistas);
+                }
 
             } catch (erro) {
                 console.error(erro);
@@ -171,6 +178,16 @@ export default function TelaPerfil() {
 
     if (!usuario) {
         return null;
+    }
+
+    function getCorDificuldade(dificuldade: string) {
+        switch (dificuldade) {
+            case "Fácil": return "text-green-400 border-green-400";
+            case "Médio": return "text-yellow-400 border-yellow-400";
+            case "Difícil": return "text-orange-400 border-orange-400";
+            case "Difícil+": return "text-red-500 border-red-500";
+            default: return "text-gray-400 border-gray-400";
+        }
     }
 
     return (
@@ -322,14 +339,14 @@ export default function TelaPerfil() {
 
                     <div className="grid grid-cols-5 mt-15 mb-25 w-full gap-x-[0.5vw] md:gap-x-[2vw] lg:gap-x-[4vw] xl:gap-x-[5.85vw] 2xl:gap-x-[8.85vw] gap-y-[4vh] lg:gap-y-[8vh] xl:gap-y-[10vh] 2xl:gap-y-[13.76vh]">
 
-                        {conquistas.map((conquista, index) => {
+                        {conquistas.map((conquista) => {
 
                             let cor = "";
                             let img: NomeIcone = "cadeado";
 
-                            if (conquista[1]) {
+                            if (conquista.desbloqueada) {
                                 cor = "#C8911A";
-                                img = conquista[0].toLowerCase() as NomeIcone;
+                                img = (conquista.icone?.toLowerCase() || "espada") as NomeIcone;
                             } else {
                                 cor = "#686868";
                                 img = "cadeado";
@@ -337,7 +354,7 @@ export default function TelaPerfil() {
 
                             return (
                                 <div
-                                    key={index}
+                                    key={conquista.idConquista}
                                     className="flex flex-col text-center items-center justify-center"
                                 >
 
@@ -351,12 +368,16 @@ export default function TelaPerfil() {
                                         />
                                     </div>
 
-                                    <h1 className="text-[20px]">
-                                        Conquista #{index + 1}
+                                    <h1 className="text-[20px] font-bold mt-2">
+                                        {conquista.nome}
                                     </h1>
 
-                                    <h2 className="text-[15px]">
-                                        {conquista[0]}
+                                    <span className={`text-[12px] px-2 py-0.5 rounded border my-1 ${getCorDificuldade(conquista.dificuldade)}`}>
+                                        {conquista.dificuldade}
+                                    </span>
+
+                                    <h2 className="text-[13px] text-gray-300">
+                                        {conquista.descricao}
                                     </h2>
 
                                 </div>
