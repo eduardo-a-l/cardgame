@@ -31,7 +31,7 @@ export default function TelaBatalha() {
                          clickable: boolean, proporcional: boolean = false) 
                          : JSX.Element {
 
-        var click = ""
+        let click = ""
         if (clickable)
             click = "cursor-pointer"
         if (proporcional)
