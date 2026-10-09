@@ -47,12 +47,13 @@ export default function TelaBatalha() {
     }
 
     return (
-        <main className="relative h-screen bg-[#1B1B2F] flex justify-center xl:p-4">
+        <main className="relative h-screen bg-[#1B1B2F] flex justify-center">
             
             {/*container geral*/}
-            <div className="flex flex-col w-[100vw] xl:w-[95vw]">
+            <div className="flex flex-col w-[78vw] h-full">
 
-                <div className="flex items-center justify-center gap-[3vw] h-[20vh]">
+                {/*Barra Superior*/}
+                <div className="flex items-center justify-center gap-[3vw] h-[15vh]">
 
                     <h1>Oponente</h1>
 
@@ -62,31 +63,98 @@ export default function TelaBatalha() {
                     {exibirCarta("border-[#686868]", ["w-[80px]", ""], "h-[85px]", "", "Olá", "text-[20px]", "rounded-[8px]", "bg-[#363C4B]")}
                     {exibirCarta("border-[#686868]", ["w-[80px]", ""], "h-[85px]", "", "Olá", "text-[20px]", "rounded-[8px]", "bg-[#363C4B]")}
 
+                    <h1>Derrotados: 0/3</h1>
 
                 </div>
 
-                <aside className="min-h-0 h-full flex flex-col items-center">
+                {/*Campo de Batalha */}
+                <div className="flex items-center h-[53vh]">
+                    {/*Carta Jogador*/}
+                    <div className="flex items-center justify-center w-[50%] h-[100%] bg-[#363C4B]">
+                        
+                        <div className="flex flex-col">
+                            <h1 className="text_dinheiro">Você</h1>
+                            {exibirCarta("border-[#C8911A]", ["w-[250px]", ""], "h-[340px]", "", "Carta1", "text-[40px]", "rounded-[15px]", "bg-[#21366B]")}
+                        </div>
 
-                    <Botao
-                        texto="Comprar"
-                        raio={20}
-                        className="w-[clamp(50px,13.03vw,250px)] h-[clamp(30px,9vh,85px)] flex items-center justify-center text-center text-[clamp(15px,2.240vw,43px)] mb-[clamp(21px,3.175vh,30px)]"
-                    />
+                        <div className="flex flex-col">
 
-                    <Botao
-                        texto="Detalhes"
-                        raio={20}
-                        className="w-[clamp(50px,13.03vw,250px)] h-[clamp(30px,9vh,85px)] flex items-center justify-center text-center text-[clamp(15px,2.240vw,43px)] mb-[clamp(21px,6.35vh,60px)]"
-                        onClick={() => router.push("/carta/1/descricao") }
-                    />
+                            <h1>Vida: XX</h1>
 
-                    <div className="text-[clamp(20px,1.98vw,38px)] text-white overflow-y-auto inventory-scrollbar">
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam vitae dui eu orci laoreet egestas.
+                        </div>
+
+                    </div>
+                    
+                    {/*Carta Oponente*/}
+                    <div className="flex items-center justify-center w-[50%] h-[100%] bg-[#363C4B]">
+                        
+                        <div className="flex flex-col">
+                            <h1 className="text-[#686868]">Jogador 2</h1>
+                            {exibirCarta("border-[#C8911A]", ["w-[250px]", ""], "h-[340px]", "", "Carta1", "text-[40px]", "rounded-[15px]", "bg-[#21366B]")}
+                        </div>
+
+                        <div className="flex flex-col">
+
+                            <h1>Vida: XX</h1>
+
+                        </div>
+
                     </div>
 
-                </aside>
+                </div>
+
+                {/*Barra Inferior*/}
+                <div className="flex flex-col h-[32vh]">
+
+                    <div className="flex justify-around">
+
+                        <h1>Jogador 1</h1>
+
+                        <h1>Derrotados 0/3</h1>
+
+                    </div>
+
+                    <div className="flex justify-around items-center h-[100%]">
+
+                        {exibirCarta("border-[#686868]", ["w-[150px]", ""], "h-[220px]", "", "Carta", "text-[20px]", "rounded-[25px]", "bg-[#21366B]")}
+                        {exibirCarta("border-[#686868]", ["w-[150px]", ""], "h-[220px]", "", "Carta", "text-[20px]", "rounded-[25px]", "bg-[#21366B]")}
+                        {exibirCarta("border-[#686868]", ["w-[150px]", ""], "h-[220px]", "", "Carta", "text-[20px]", "rounded-[25px]", "bg-[#21366B]")}
+                        {exibirCarta("border-[#686868]", ["w-[150px]", ""], "h-[220px]", "", "Carta", "text-[20px]", "rounded-[25px]", "bg-[#21366B]")}
+                        {exibirCarta("border-[#686868]", ["w-[150px]", ""], "h-[220px]", "", "Carta", "text-[20px]", "rounded-[25px]", "bg-[#21366B]")}
+
+                        <div className="flex flex-col items-center justify-center gap-[20px] justify-end">
+
+                            <div className="flex gap-[20px]">
+
+                                <Botao
+                                    texto="Ação 1"      
+                                    raio={20}
+                                    className="w-[150px] h-[70px] flex items-center justify-center text-center text-[30px]"
+                                />
+
+                                <Botao
+                                    texto="Ação 2"      
+                                    raio={20}
+                                    className="w-[150px] h-[70px] flex items-center justify-center text-center text-[30px]"
+                                />
+
+                            </div>
+
+                            <Botao
+                                    texto="Passar o turno"      
+                                    raio={20}
+                                    className="w-[250px] h-[70px] flex items-center justify-center text-center text-[30px]"
+                                />
+
+                        </div>
+
+                    </div>
+
+                </div>
 
             </div>
+
+            <aside className="w-[22vw]"></aside>
 
         </main>
     )
