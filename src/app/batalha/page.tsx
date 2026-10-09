@@ -1,13 +1,52 @@
 "use client";
 
-import { JSX, useState } from "react";
+import { JSX, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Botao } from "@/components/ui/Botao";
 import { NomeIcone } from "@/components/ui/Icone";
 import { Icone } from "@/components/ui/Icone";
 
+interface ItemLoja {
+    idCarta: number,
+    desconto: number,
+    ehOferta: number,
+    ativo: number,
+    carta_nome: string,
+    carta_tipo: string,
+    carta_raridade: string,
+    carta_precoPadrao: number,
+    carta_vida?: number,
+    carta_acao1: string,
+    carta_acao2?: string
+}
+
 export default function TelaBatalha() {
     const router = useRouter();
+
+    const [itens, setItens] = useState<ItemLoja[]>([]);
+
+    useEffect(() => {
+        async function carregarDados() {
+            const usuarioSalvo = localStorage.getItem("usuario");
+
+            if (!usuarioSalvo) {
+                router.push("/login");
+                return;
+            }
+
+            const usuarioLocal = JSON.parse(usuarioSalvo);
+
+            const responseItens = await fetch(
+                `http://localhost:8081/Loja/itens/${usuarioLocal.idUsuario}`
+            );
+
+            if (responseItens.ok) {
+                const dadosLoja: ItemLoja[] = await responseItens.json();
+                setItens(dadosLoja);
+            }
+        }
+        carregarDados
+    }, [router]);
 
     const nomes = [
         "Espada",
