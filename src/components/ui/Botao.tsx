@@ -11,6 +11,7 @@ interface BotaoProps extends ComponentProps<"button"> {
   corDeFundo?: string;
   corDaBorda?: string;
   corDoTexto?: string;
+  borda?: string;
 }
 
 export function Botao({
@@ -21,6 +22,7 @@ export function Botao({
   corDeFundo = "#21366B",
   corDaBorda = "#C8911A",
   corDoTexto = "#FFFFFF",
+  borda = "border-2",
   className = "",
   style,
   ...props
@@ -34,7 +36,7 @@ export function Botao({
         borderRadius: `${raio}px`,
         ...style,
       }}
-      className={`flex items-center gap-4 px-6 py-3 border-2 text-lg ${className}`}
+      className={`flex items-center gap-4 px-6 py-3 ${borda} text-lg ${className}`}
       {...props}
     >
       {nomeIcone && <Icone nome={nomeIcone} tamanho={tamanhoIcone} />}
