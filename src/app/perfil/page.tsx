@@ -337,7 +337,7 @@ export default function TelaPerfil() {
                         Conquistas
                     </h1>
 
-                    <div className="grid grid-cols-5 mt-15 mb-25 w-full gap-x-[0.5vw] md:gap-x-[2vw] lg:gap-x-[4vw] xl:gap-x-[5.85vw] 2xl:gap-x-[8.85vw] gap-y-[4vh] lg:gap-y-[8vh] xl:gap-y-[10vh] 2xl:gap-y-[13.76vh]">
+                    <div className="grid grid-cols-5 mt-15 mb-25 w-full gap-x-[1.5vw] md:gap-x-[2vw] lg:gap-x-[4vw] xl:gap-x-[5.85vw] 2xl:gap-x-[8.85vw] gap-y-[13.76vh]">
 
                         {conquistas.map((conquista) => {
 
@@ -355,7 +355,7 @@ export default function TelaPerfil() {
                             return (
                                 <div
                                     key={conquista.idConquista}
-                                    className="flex flex-col text-center items-center justify-center"
+                                    className="flex flex-col text-center items-center justify-between"
                                 >
 
                                     <div
@@ -376,7 +376,7 @@ export default function TelaPerfil() {
                                         {conquista.dificuldade}
                                     </span>
 
-                                    <h2 className="text-[13px] text-gray-300">
+                                    <h2 className="text-[13px] text-gray-300 h-[30px]">
                                         {conquista.descricao}
                                     </h2>
 
