@@ -20,6 +20,7 @@ export default function Selecionar_oponente() {
   const [aberto, setAberto] = useState(false);
   const [pin, setPin] = useState("");
   const [erro, setErro] = useState("");
+  const [erroServidor, setErroServidor] = useState(false);
 
   useEffect(() => {
     async function carregarDados() {
@@ -48,12 +49,28 @@ export default function Selecionar_oponente() {
         setOponentes(filtrados);
       } catch (err) {
         console.error(err);
-        setErro("Não foi possível carregar os oponentes.");
+        setErroServidor(true);
       }
     }
 
     carregarDados();
   }, [router]);
+
+  if (erroServidor) {
+    return (
+      <div className="bg-gray-900 min-h-screen min-w-screen flex items-center justify-center relative">
+        <button
+          className="w-44 h-12 hover:scale-105 transition-all flex justify-center cursor-pointer text-white text-4xl absolute top-10 left-8 gap-2.5"
+          onClick={() => router.push("/")}
+        >
+          <Back className="h-11 w-11" /> Voltar
+        </button>
+        <p className="text-white text-2xl text-center">
+          Não foi possível conectar-se com o servidor
+        </p>
+      </div>
+    );
+  }
 
   function handleContinuar() {
     setErro("");

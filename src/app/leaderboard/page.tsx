@@ -16,6 +16,7 @@ export default function TelaLeaderboard() {
   const router = useRouter();
 
   const [jogadores, setJogadores] = useState<Jogador[]>([]);
+  const [erroServidor, setErroServidor] = useState(false);
 
   useEffect(() => {
     async function carregarRanking() {
@@ -31,11 +32,34 @@ export default function TelaLeaderboard() {
         setJogadores(dados);
       } catch (erro) {
         console.error(erro);
+        setErroServidor(true);
       }
     }
 
     carregarRanking();
   }, []);
+
+  if (erroServidor) {
+    return (
+      <main className="relative min-h-screen bg-[#1B1B2F] flex items-center justify-center p-4">
+        <div className="absolute top-10 left-10">
+          <Botao
+            texto="Voltar"
+            nomeIcone="voltar"
+            tamanhoIcone={40}
+            corDoTexto="#FFFFFF"
+            corDeFundo="transparent"
+            corDaBorda="transparent"
+            className="px-0 py-0 text-3xl"
+            onClick={() => router.push("/")}
+          />
+        </div>
+        <p className="text-white text-2xl text-center">
+          Não foi possível conectar-se com o servidor
+        </p>
+      </main>
+    );
+  }
 
   const jogadoresOrdenados = [...jogadores].sort(
     (a, b) => b.pontos - a.pontos
