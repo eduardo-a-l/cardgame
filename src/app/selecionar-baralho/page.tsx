@@ -25,6 +25,7 @@ function SelecionarBaralhoConteudo() {
   const [selecionado, setSelecionado] = useState<number | null>(null);
   const [erro, setErro] = useState<string>("");
   const [carregando, setCarregando] = useState<boolean>(true);
+  const [erroServidor, setErroServidor] = useState<boolean>(false);
 
   useEffect(() => {
     if (!usuarioIdAtivo) {
@@ -39,23 +40,23 @@ function SelecionarBaralhoConteudo() {
         const respUser = await fetch(
           `http://localhost:8081/Usuarios/${usuarioIdAtivo}`
         );
-        if (respUser.ok) {
-          const userObj = await respUser.json();
-          setNomeUsuario(userObj.nomeUsuario);
+        if (!respUser.ok) {
+          throw new Error("Erro de conexão");
         }
+        const userObj = await respUser.json();
+        setNomeUsuario(userObj.nomeUsuario);
 
         const respBaralhos = await fetch(
           `http://localhost:8081/Baralhos/${usuarioIdAtivo}`
         );
-        if (respBaralhos.ok) {
-          const baralhosObj = await respBaralhos.json();
-          setBaralhos(baralhosObj);
-        } else {
-          setBaralhos([]);
+        if (!respBaralhos.ok) {
+          throw new Error("Erro de conexão");
         }
+        const baralhosObj = await respBaralhos.json();
+        setBaralhos(baralhosObj);
       } catch (err) {
         console.error(err);
-        setErro("Não foi possível carregar os baralhos.");
+        setErroServidor(true);
       } finally {
         setCarregando(false);
       }
@@ -77,6 +78,28 @@ function SelecionarBaralhoConteudo() {
     } else {
       router.push("/");
     }
+  }
+
+  if (erroServidor) {
+    return (
+      <main className="relative h-screen bg-[#1B1B2F] flex items-center justify-center p-4">
+        <div className="absolute top-10 left-10">
+          <Botao
+            texto="Voltar"
+            nomeIcone="voltar"
+            tamanhoIcone={40}
+            corDoTexto="#FFFFFF"
+            corDeFundo="transparent"
+            corDaBorda="transparent"
+            className="px-0 py-0 text-3xl"
+            onClick={() => router.push("/")}
+          />
+        </div>
+        <p className="text-white text-2xl text-center">
+          Não foi possível conectar-se com o servidor
+        </p>
+      </main>
+    );
   }
 
   if (carregando) {

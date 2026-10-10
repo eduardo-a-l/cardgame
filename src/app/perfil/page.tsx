@@ -42,6 +42,7 @@ function PerfilConteudo() {
     const [enviandoFoto, setEnviandoFoto] = useState(false);
     const [fotoAtualizada, setFotoAtualizada] = useState(0);
     const [ehProprioUsuario, setEhProprioUsuario] = useState(false);
+    const [erroServidor, setErroServidor] = useState(false);
 
     useEffect(() => {
         async function carregarDados() {
@@ -85,7 +86,7 @@ function PerfilConteudo() {
 
             } catch (erro) {
                 console.error(erro);
-                setErro("Não foi possível carregar os dados do perfil.");
+                setErroServidor(true);
             } finally {
                 setCarregando(false);
             }
@@ -93,6 +94,27 @@ function PerfilConteudo() {
 
         carregarDados();
     }, [router, idParam]);
+
+    if (erroServidor) {
+        return (
+            <main className="relative min-h-screen bg-[#1B1B2F] flex items-center justify-center p-4">
+                <div className="absolute top-10 left-10">
+                    <Botao
+                        texto="Voltar"
+                        nomeIcone="voltar"
+                        tamanhoIcone={40}
+                        corDeFundo="transparent"
+                        corDaBorda="transparent"
+                        corDoTexto="#FFFFFF"
+                        onClick={() => idParam ? router.back() : router.push("/")}
+                    />
+                </div>
+                <p className="text-white text-2xl text-center">
+                    Não foi possível conectar-se com o servidor
+                </p>
+            </main>
+        );
+    }
 
     async function salvarPin() {
         if (!usuario || input.length !== 4) {

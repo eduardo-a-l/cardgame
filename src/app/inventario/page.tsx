@@ -21,7 +21,7 @@ export default function TelaInventario() {
     const router = useRouter();
 
     const [cartas, setCartas] = useState<Carta[]>([]);
-    const [erro, setErro] = useState("");
+    const [erroServidor, setErroServidor] = useState(false);
 
     useEffect(() => {
         async function carregarInventario() {
@@ -40,7 +40,7 @@ export default function TelaInventario() {
                 );
 
                 if (!response.ok) {
-                    throw new Error("Erro ao carregar inventário");
+                    throw new Error("Erro de conexão");
                 }
 
                 const dados: Carta[] = await response.json();
@@ -48,12 +48,33 @@ export default function TelaInventario() {
                 setCartas(dados);
             } catch (erro) {
                 console.error(erro);
-                setErro("Não foi possível carregar o inventário.");
+                setErroServidor(true);
             }
         }
 
         carregarInventario();
     }, [router]);
+
+    if (erroServidor) {
+        return (
+            <main className="relative min-h-screen bg-[#1B1B2F] flex items-center justify-center p-4">
+                <div className="absolute top-10 left-10">
+                    <Botao
+                        texto="Voltar"
+                        nomeIcone="voltar"
+                        tamanhoIcone={40}
+                        corDeFundo="transparent"
+                        corDaBorda="transparent"
+                        corDoTexto="#FFFFFF"
+                        onClick={() => router.push("/")}
+                    />
+                </div>
+                <p className="text-white text-2xl text-center">
+                    Não foi possível conectar-se com o servidor
+                </p>
+            </main>
+        );
+    }
 
     return (
         <main className="relative min-h-screen bg-[#1B1B2F] flex items-center justify-center p-4">
@@ -77,12 +98,6 @@ export default function TelaInventario() {
                 <div className="w-[154.03px] h-4"></div>
 
             </div>
-
-            {erro && (
-                <p className="absolute top-32 text-red-400">
-                    {erro}
-                </p>
-            )}
 
             <div className="h-[75vh] w-[95vw] md:w-[90vw] xl:w-[85vw] mt-12 overflow-y-auto inventory-scrollbar">
 

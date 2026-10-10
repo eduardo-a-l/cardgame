@@ -111,7 +111,7 @@ export default function TelaLogin() {
             router.replace("/perfil");
         } catch (erro) {
             console.error(erro);
-            setErro("Não foi possível conectar com a API.");
+            setErro("Não foi possível conectar-se com o servidor.");
         } finally {
             setCarregando(false);
         }
