@@ -52,7 +52,7 @@ export default function TelaLogin() {
                 })
             );
 
-            router.push("/perfil");
+            router.replace("/perfil");
         } catch (erro) {
             console.error(erro);
             setErro("Não foi possível conectar com a API.");
@@ -108,7 +108,7 @@ export default function TelaLogin() {
 
             window.dispatchEvent(new Event("usuarioAtualizado"));
 
-            router.push("/perfil");
+            router.replace("/perfil");
         } catch (erro) {
             console.error(erro);
             setErro("Não foi possível conectar com a API.");

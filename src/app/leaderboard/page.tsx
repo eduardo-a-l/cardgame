@@ -92,7 +92,11 @@ export default function TelaLeaderboard() {
 
           <tbody>
             {ranking.map((jogador) => (
-              <tr key={jogador.idUsuario}>
+              <tr
+                key={jogador.idUsuario}
+                className="cursor-pointer hover:bg-[#262647] transition-colors"
+                onClick={() => router.push(`/perfil?id=${jogador.idUsuario}`)}
+              >
                 <td className={corPosicao(jogador.posicao)}>
                   {jogador.posicao}º
                 </td>
