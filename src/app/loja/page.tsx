@@ -21,7 +21,11 @@ interface ItemLoja {
 
 interface Pacote {
     raridade: string,
-    cor: string
+    cor: string,
+    chancesCartas: number[],
+    chancesUltimaCarta: number[],
+    preco: number,
+    descricao: string
 }
 
 export default function TelaLoja() {
@@ -57,11 +61,9 @@ export default function TelaLoja() {
     const [indexSelecionado, setIndexSelecionado] = useState(-1);
 
     const pacotes: Pacote[] = [
-        { raridade: "Normal",   cor: "bg-[#21366B]" },
-        { raridade: "Incomum",  cor: "bg-[#21366B]" /*Change*/},
-        { raridade: "Raro",     cor: "bg-[#21366B]" /*Change*/},
-        { raridade: "Épico",    cor: "bg-[#21366B]" /*Change*/},
-        { raridade: "Lendário", cor: "bg-[#21366B]" /*Change*/}
+        { raridade: "Base",     cor: "#21366B", chancesCartas: [0.45, 0.4, 0.14, 0.01, 0.0 ], chancesUltimaCarta: [0.0, 0.5, 0.45, 0.05, 0.0 ], preco: 80,  descricao: "Contém cartas aleatórias"},
+        { raridade: "Avançado", cor: "#216B35", chancesCartas: [0.05, 0.4, 0.45, 0.09, 0.01], chancesUltimaCarta: [0.0, 0.0, 0.5,  0.45, 0.05], preco: 250, descricao: "Contém cartas aleatórias"},
+        { raridade: "Épico",    cor: "#53216B", chancesCartas: [0.0,  0.1, 0.4,  0.45, 0.05], chancesUltimaCarta: [0.0, 0.0, 0.0,  0.7,  0.3 ], preco: 450, descricao: "Contém cartas aleatórias"}
     ];
 
     const ofertas = itens.filter(item => item.ehOferta && item.ativo);
@@ -92,29 +94,61 @@ export default function TelaLoja() {
 
         if (indexSelecoes === 1) {
             const pacoteSelecionado = secoes[indexSelecoes].dados[indexSelecionado] as Pacote;
-            {/*Change*/}
+            const raridades = ["Comum", "Incomum", "Raro",    "Ultra Raro", "Lendário"];
+            const cores =     ["white", "#56BF72", "#3960C2", "#620D69",    "#E6A71F"]
             return (
-                    <p className="text-[clamp(20px,2.5vw,40px)]">
+                <div className="text-[clamp(20px,1.98vw,38px)] overflow-y-auto inventory-scrollbar">
+                    <p style={{ color: pacoteSelecionado.cor }}>
                         Pacote {pacoteSelecionado.raridade}
-                        {/*Descrição Pacotes*/}
                     </p>
+                    <p className="text-[clamp(18px,1.5vw,29px)]">
+                        {pacoteSelecionado.descricao}
+                    </p>
+                    <p className="text-[clamp(18px,1.5vw,29px)] text_dinheiro">
+                        Preço: {pacoteSelecionado.preco}G
+                    </p>
+                    <p className="text-[clamp(18px,1.5vw,29px)]">
+                        Chances das Cartas 1-4:
+                    </p>
+                    {pacoteSelecionado.chancesCartas.map((chance, index) => (
+                        <p key={index} className="text-[clamp(16px,1.2vw,24px)]" style={{ color: cores[index] }}>
+                            {raridades[index]}: {(chance*100).toFixed(0)}%
+                        </p>
+                    ))}
+                    <p className="text-[clamp(18px,1.5vw,29px)]">
+                        Chances da Última Carta:
+                    </p>
+                    {pacoteSelecionado.chancesUltimaCarta.map((chance, index) => (
+                        <p key={index} className="text-[clamp(16px,1.2vw,24px)]" style={{ color: cores[index] }}>
+                            {raridades[index]}: {(chance*100).toFixed(0)}%
+                        </p>
+                    ))}
+                </div>
             )
         }
 
         if (indexSelecoes === 0 || indexSelecoes === 2) {
             const itemSelecionado = secoes[indexSelecoes].dados[indexSelecionado] as ItemLoja;
             {/*Change*/}
+            const corTipo = itemSelecionado.carta_tipo === "Personagem" ? "red" : itemSelecionado.carta_tipo === "Suporte" ? "blue" : itemSelecionado.carta_tipo === "Campo" ? "green" : "white";
             return (
-                    <p className="text-[clamp(20px,2.5vw,40px)]">
+                <div className="text-[clamp(20px,1.98vw,38px)] overflow-y-auto inventory-scrollbar">
+                    <p>
                         {itemSelecionado.carta_nome}<br/>
-                        Tipo: {itemSelecionado.carta_tipo}<br/>
-                        Raridade: {itemSelecionado.carta_raridade}<br/>
-                        { itemSelecionado.carta_vida && ( 
-                            <>
-                            Vida: {itemSelecionado.carta_vida}
-                            </>
-                            ) }
                     </p>
+                    <p className="text-[clamp(18px,1.5vw,29px)]" style={{ color: corTipo }}>
+                        Tipo: {itemSelecionado.carta_tipo}
+                    </p>
+                    <p className="text-[clamp(18px,1.5vw,29px)]">
+                        Raridade: {itemSelecionado.carta_raridade}
+                    </p>
+                    { itemSelecionado.carta_vida && ( 
+                        <p className="text-[clamp(18px,1.5vw,29px)]" style={{ color: "red" }}>
+                            Vida: {itemSelecionado.carta_vida}
+                        </p>
+                      ) 
+                    }
+                </div>
             )
         }
     }
@@ -136,7 +170,7 @@ export default function TelaLoja() {
                                 <div 
                                     key={item.idLojaItem}
                                     onClick={() => { setIndexSelecionado(item.idLojaItem); }}
-                                    className="cursor-pointer w-full max-w-[209px] aspect-[209/301.4] bg-[#21366B] border-[5px] border-[#686868] rounded-[33px] shadow-sm flex items-center justify-center text-white text-[38px] text-center"
+                                    className="transition-transform duration-200 ease-out hover:scale-[1.05] cursor-pointer w-full max-w-[209px] aspect-[209/301.4] bg-[#21366B] border-[5px] border-[#686868] rounded-[33px] shadow-sm flex items-center justify-center text-white text-[38px] text-center"
                                 >
                                     {item.carta_nome}
                                 </div>
@@ -159,8 +193,9 @@ export default function TelaLoja() {
                             ((item, index) => (
                                 <div 
                                     key={index}
+                                    style={{ backgroundColor: item.cor }}
                                     onClick={() => { setIndexSelecionado(index); }}
-                                    className={`cursor-pointer w-full max-w-[209px] aspect-[209/301.4] ${item.cor} border-[5px] border-[#686868] rounded-[33px] shadow-sm flex items-center justify-center text-white text-[38px] text-center`}
+                                    className="transition-transform duration-200 ease-out hover:scale-[1.05] cursor-pointer w-full max-w-[209px] aspect-[209/301.4] border-[5px] border-[#686868] rounded-[33px] shadow-sm flex items-center justify-center text-white text-[38px] text-center"
                                 >
                                     {item.raridade}
                                 </div>
@@ -197,9 +232,9 @@ export default function TelaLoja() {
 
             </div>
             
-            <div className="loja-container w-screen 2xl:w-[95vw] mt-[clamp(calc(65px+8vh),16vh,151.2px)] grid grid-cols-[15vw_1fr_15vw]">
+            <div className="loja-container w-screen 2xl:w-[95vw] mt-[clamp(120px,14vh,151.2px)] grid grid-cols-[15vw_1fr_15vw]">
                 
-                <aside className="min-h-0 h-full flex flex-col">
+                <aside className="min-h-0 h-full flex flex-col pt-[2vh] ">
                     
                     {secoes.map((nome_e_itens, index) => (
                             <h2 
@@ -213,7 +248,7 @@ export default function TelaLoja() {
 
                 </aside>
 
-                <section className="min-h-0 overflow-y-auto inventory-scrollbar ml-[2vw] mr-[2vw]">
+                <section className="min-h-0 overflow-y-auto inventory-scrollbar pl-[2vw] pr-[1vw] mr-[1vw] pt-[2vh]">
 
                     <div className="grid grid-cols-4 gap-[3vw] justify-items-center">
 
@@ -223,7 +258,7 @@ export default function TelaLoja() {
 
                 </section>
 
-                <aside className="min-h-0 h-full flex flex-col items-center">
+                <aside className="min-h-0 h-full flex flex-col items-center pt-[2vh]">
 
                     <Botao
                         texto="Comprar"
@@ -247,14 +282,7 @@ export default function TelaLoja() {
 
                         }}
                     />
-                    <div className="text-[clamp(20px,1.98vw,38px)] text-white overflow-y-auto inventory-scrollbar">
-                        {descricao()}
-{/*
-                        {itens.map((item, index) => (
-                            <p key={index}>{item.carta_nome}</p>
-                        ))}
-*/}
-                    </div>
+                    {descricao()}
                 </aside>
 
             </div>
