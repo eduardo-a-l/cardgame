@@ -71,10 +71,10 @@ export default function TelaLoja() {
     const avulsas = itens.filter(item => !item.ehOferta && item.ativo);
 
     const secoes = [
-            { nome: "Ofertas",        dados: ofertas}, 
-            { nome: "Pacotes",        dados: pacotes}, 
-            { nome: "Cartas Avulsas", dados: avulsas}, 
-            { nome: "Fundos de campo",dados: [""]}
+            { nome: "Ofertas",         dados: ofertas}, 
+            { nome: "Pacotes",         dados: pacotes}, 
+            { nome: "Cartas Avulsas",  dados: avulsas}, 
+            { nome: "Fundos de campo", dados: [""]}
     ];
 
     {/*Change*/}
@@ -143,10 +143,33 @@ export default function TelaLoja() {
                         Raridade: {itemSelecionado.carta_raridade}
                     </p>
                     { itemSelecionado.carta_vida && ( 
-                        <p className="text-[clamp(18px,1.5vw,29px)]" style={{ color: "red" }}>
-                            Vida: {itemSelecionado.carta_vida}
+                        <p className="text-[clamp(18px,1.5vw,29px)]" style={{ color: "#4CAF50" }}>
+                            HP: {itemSelecionado.carta_vida}
                         </p>
                       ) 
+                    }
+                    { itemSelecionado.carta_tipo !== "Personagem"
+                        ? 
+                        (<p className="text-[clamp(18px,1.5vw,29px)]">
+                            Efeito: {itemSelecionado.carta_acao1}
+                        </p>)
+                        : 
+                        (
+                            <>
+                                <p className="text-[clamp(18px,1.5vw,29px)]">
+                                    Ação 1: {itemSelecionado.carta_acao1}
+                                </p>
+                                
+                                {
+                                    itemSelecionado.carta_acao2
+                                    ? 
+                                    (<p className="text-[clamp(18px,1.5vw,29px)]">
+                                            Ação 1: {itemSelecionado.carta_acao1}
+                                    </p>)
+                                    : null
+                                }
+                            </>
+                        )
                     }
                 </div>
             )
@@ -166,13 +189,13 @@ export default function TelaLoja() {
             if (exibicoes.length > 0) {
 
                 return (exibicoes.map
-                            ((item) => (
+                            ((item, index) => (
                                 <div 
                                     key={item.idLojaItem}
-                                    onClick={() => { setIndexSelecionado(item.idLojaItem); }}
-                                    className="transition-transform duration-200 ease-out hover:scale-[1.05] cursor-pointer w-full max-w-[209px] aspect-[209/301.4] bg-[#21366B] border-[5px] border-[#686868] rounded-[33px] shadow-sm flex items-center justify-center text-white text-[38px] text-center"
+                                    onClick={() => { setIndexSelecionado(index); }}
+                                    className="transition-transform duration-200 ease-out hover:scale-[1.05] cursor-pointer w-full max-w-[209px] aspect-[209/301.4] bg-[#21366B] border-[5px] border-[#686868] rounded-[33px] shadow-sm flex items-center justify-center"
                                 >
-                                    {item.carta_nome}
+                                    <p className="text-white text-[clamp(24px,1.98vw,38px)] text-center ">{item.carta_nome}</p>
                                 </div>
                             ))
                         )
@@ -239,7 +262,7 @@ export default function TelaLoja() {
                     {secoes.map((nome_e_itens, index) => (
                             <h2 
                                 key={index} 
-                                className={`${checkCor(index)} text-[clamp(20px,1.98vw,38px)] mt-[clamp(21px,3.17vh,30px)] mb-[clamp(10px,7.41vh,70px)] ml-[clamp(10px,1.615vw,31px)]`}
+                                className={`${checkCor(index)} cursor-pointer text-[clamp(20px,1.98vw,38px)] mt-[clamp(21px,3.17vh,30px)] mb-[clamp(10px,7.41vh,70px)] ml-[clamp(10px,1.615vw,31px)] border-b-[3px] border-[#686868] rounded-[10px] text-center hover:bg-[#21366B] hover:scale-102 `}
                                 onClick={ () => {setIndexSelecoes(index); setIndexSelecionado(-1)} }
                             >
                                 • {nome_e_itens.nome}
