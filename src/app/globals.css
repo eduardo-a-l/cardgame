@@ -71,6 +71,15 @@ h2, h1, p {
   height: 75vh;
 }
 
+.loja-hover {
+  cursor: pointer;
+  transition: transform 0.3s ease-in-out;
+}
+
+.loja-hover:hover {
+  transform: scale(1.05);
+}
+
 .header-loja .text_dinheiro, .botao-sair-loja {
   width : clamp(100px,20.83vw,400px)
 }
