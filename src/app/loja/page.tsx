@@ -19,20 +19,34 @@ interface ItemLoja {
     carta_acao2?: string
 }
 
+interface ProbabilidadesPacote {
+    raridade: string,
+    chanceCartas: number,
+    chanceUltimaCarta: number
+}
+
+interface PacoteAPI {
+    idPacote: number;
+    raridade: string;
+    preco: number;
+    descricao: string;
+    probabilidades: string | ProbabilidadesPacote[];
+}
+
 interface Pacote {
     raridade: string,
-    cor: string,
-    chancesCartas: number[],
-    chancesUltimaCarta: number[],
+    probabilidades: ProbabilidadesPacote[],
     preco: number,
-    descricao: string
+    descricao: string,
+    cor?: string
 }
 
 export default function TelaLoja() {
     const router = useRouter();
 
     const [itens, setItens] = useState<ItemLoja[]>([]);
-    
+    const [pacotes, setPacotes] = useState<Pacote[]>([]);
+
     const [idUsuario, setIdUsuario] = useState<number | null>(null);
     const [dinheiro, setDinheiro] = useState<number>(0);
 
@@ -74,6 +88,31 @@ export default function TelaLoja() {
 
                 await carregarItens(usuarioLocal.idUsuario);
 
+                const responsePacotes = await fetch(
+                    "http://localhost:8081/Pacote"
+                );
+
+                if (!responsePacotes.ok) {
+                    throw new Error("Erro ao carregar os pacotes");
+                }
+
+                const dadosPacotes: PacoteAPI[] = await responsePacotes.json();
+
+                const pacotesComCor = dadosPacotes.map((pacote) => ({
+                    ...pacote,
+                    probabilidades:
+                        typeof pacote.probabilidades === "string"
+                            ? JSON.parse(pacote.probabilidades)
+                            : pacote.probabilidades,
+                    cor:
+                        pacote.raridade === "Base" ? "#21366B" :
+                        pacote.raridade === "Avançado" ? "#216B35" :
+                        pacote.raridade === "Épico" ? "#53216B" :
+                        "#686868"
+                }));
+
+                setPacotes(pacotesComCor);
+                
             } catch (erro) {
                 console.error(erro);
             }
@@ -84,12 +123,6 @@ export default function TelaLoja() {
     const [indexSelecoes, setIndexSelecoes] = useState(2);
 
     const [indexSelecionado, setIndexSelecionado] = useState(-1);
-
-    const pacotes: Pacote[] = [
-        { raridade: "Base",     cor: "#21366B", chancesCartas: [0.45, 0.4, 0.14, 0.01, 0.0 ], chancesUltimaCarta: [0.0, 0.5, 0.45, 0.05, 0.0 ], preco: 80,  descricao: "Contém cartas aleatórias"},
-        { raridade: "Avançado", cor: "#216B35", chancesCartas: [0.05, 0.4, 0.45, 0.09, 0.01], chancesUltimaCarta: [0.0, 0.0, 0.5,  0.45, 0.05], preco: 250, descricao: "Contém cartas aleatórias"},
-        { raridade: "Épico",    cor: "#53216B", chancesCartas: [0.0,  0.1, 0.4,  0.45, 0.05], chancesUltimaCarta: [0.0, 0.0, 0.0,  0.7,  0.3 ], preco: 450, descricao: "Contém cartas aleatórias"}
-    ];
 
     const ofertas = itens.filter(item => item.ehOferta && item.ativo);
 
@@ -144,17 +177,17 @@ export default function TelaLoja() {
                     <p className="text-[clamp(18px,1.5vw,29px)]">
                         Chances das Cartas 1-4:
                     </p>
-                    {pacoteSelecionado.chancesCartas.map((chance, index) => (
-                        <p key={index} className="text-[clamp(16px,1.2vw,24px)]" style={{ color: corTipo(raridades[index]) }}>
-                            {raridades[index]}: {(chance*100).toFixed(0)}%
+                    {pacoteSelecionado.probabilidades.map((probabilidade, index) => (
+                        <p key={index} className="text-[clamp(16px,1.2vw,24px)]" style={{ color: corTipo(probabilidade.raridade) }}>
+                            {probabilidade.raridade}: {(probabilidade.chanceCartas*100).toFixed(0)}%
                         </p>
                     ))}
                     <p className="text-[clamp(18px,1.5vw,29px)]">
                         Chances da Última Carta:
                     </p>
-                    {pacoteSelecionado.chancesUltimaCarta.map((chance, index) => (
-                        <p key={index} className="text-[clamp(16px,1.2vw,24px)]" style={{ color: corTipo(raridades[index]) }}>
-                            {raridades[index]}: {(chance*100).toFixed(0)}%
+                    {pacoteSelecionado.probabilidades.map((probabilidade, index) => (
+                        <p key={index} className="text-[clamp(16px,1.2vw,24px)]" style={{ color: corTipo(probabilidade.raridade) }}>
+                            {probabilidade.raridade}: {(probabilidade.chanceUltimaCarta*100).toFixed(0)}%
                         </p>
                     ))}
                 </div>
@@ -228,8 +261,8 @@ export default function TelaLoja() {
                                     className="loja-hover w-full max-w-[209px] aspect-[209/301.4] border-[5px] border-[#686868] rounded-[33px] shadow-sm flex flex-col items-center justify-center"
                                     style={{ backgroundColor: corTipo(item.carta_tipo) }}
                                 >
-                                    <p className="text-white text-[clamp(24px,1.98vw,38px)] text-center ">{item.carta_nome}</p>
-                                    <p className="text_dinheiro text-[clamp(24px,1.98vw,38px)] text-center ">{ Math.floor(item.carta_precoPadrao * (1 - item.desconto)) }G</p>
+                                    <p className="text-[clamp(24px,1.5vw,29px)] text-center ">{item.carta_nome}</p>
+                                    <p className="text_dinheiro text-[clamp(24px,1.5vw,29px)] text-center ">{ Math.floor(item.carta_precoPadrao * (1 - item.desconto)) }G</p>
                                 </div>
                             ))
                         )
@@ -254,9 +287,10 @@ export default function TelaLoja() {
                                              borderColor: corTipo(item.raridade)
                                      }}
                                     onClick={() => { setIndexSelecionado(index); }}
-                                    className="loja-hover w-full max-w-[209px] aspect-[209/301.4] border-[5px] rounded-[33px] shadow-sm flex items-center justify-center text-white text-[38px] text-center"
+                                    className="loja-hover w-full max-w-[209px] aspect-[209/301.4] border-[5px] rounded-[33px] shadow-sm flex flex-col items-center justify-center text-white text-[38px] text-center"
                                 >
-                                    {item.raridade}
+                                    <p className="text-[clamp(24px,1.5vw,29px)] text-center">{item.raridade}</p>
+                                    <p className="text_dinheiro text-[clamp(24px,1.5vw,29px)] text-center ">{ item.preco }G</p>
                                 </div>
                             ))
                         )
@@ -265,7 +299,6 @@ export default function TelaLoja() {
 
             return ( <h1 className="absolute mt-[200px] text-[clamp(20px,3.125vw,45px)]">Sem pacotes disponíveis</h1> )
         }
-        
         return ( <h1 className="absolute mt-[200px] text-[clamp(20px,3.125vw,45px)]">Função ainda em desenvolvimento</h1> )
     }
 
@@ -278,11 +311,19 @@ export default function TelaLoja() {
             alert("Por favor, faça login para realizar compras.")
             return
         }
-        if (indexSelecoes !== 0 && indexSelecoes !== 2) {
+        if (indexSelecoes == 3) {
             {/*Change*/}
             alert("A compra só pode ser realizada em Ofertas ou Cartas Avulsas.")
             return
         }
+        if (indexSelecoes == 1) {
+            const pacoteSelecionado = secoes[indexSelecoes].dados[indexSelecionado] as Pacote;
+            if (dinheiro < pacoteSelecionado.preco) {
+                alert("Saldo insuficiente para comprar este pacote.");
+                return;
+            }
+        }
+
         const itemSelecionado = secoes[indexSelecoes].dados[indexSelecionado] as ItemLoja;
         const idItem = itemSelecionado.idLojaItem;
 
