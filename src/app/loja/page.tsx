@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Botao } from "@/components/ui/Botao";
+import Modal from "@/components/layout/Modal";
+import type { CartaModal } from "@/components/layout/Modal";
 
 interface ItemLoja {
     idLojaItem: number,
@@ -33,12 +35,26 @@ interface PacoteAPI {
     probabilidades: string | ProbabilidadesPacote[];
 }
 
-interface Pacote {
+export interface Pacote {
+    idPacote: number,
     raridade: string,
     probabilidades: ProbabilidadesPacote[],
     preco: number,
     descricao: string,
     cor?: string
+}
+
+export function corTipo(x: string) {
+    return x === "Personagem" ? "#21366B"
+            : x === "Suporte" ? "#53216B"
+            : x === "Campo" ? "#216B35"
+            : x === "Base" || x === "Avançado" ? "#D4AF37"
+            : x === "Épico" ? "#C8911A"
+            : x === "Incomum" ? "#56BF72"
+            : x === "Raro" ? "#3960C2"
+            : x === "Ultra Raro" ? "#620D69"
+            : x === "Lendário" ? "#E6A71F"
+            : "white";
 }
 
 export default function TelaLoja() {
@@ -81,15 +97,13 @@ export default function TelaLoja() {
 
                 if (responseUsuario.ok) {
                     const dadosUsuario = await responseUsuario.json();
-                    console.log("Dados do usuário:", dadosUsuario);
-                    console.log("Moedas do usuário:", dadosUsuario.moedas);
                     setDinheiro(dadosUsuario.moedas);
                 }
 
                 await carregarItens(usuarioLocal.idUsuario);
 
                 const responsePacotes = await fetch(
-                    "http://localhost:8081/Pacote"
+                    "http://localhost:8081/Loja/pacotes"
                 );
 
                 if (!responsePacotes.ok) {
@@ -135,24 +149,22 @@ export default function TelaLoja() {
             { nome: "Fundos de campo", dados: [""]}
     ];
 
-    function corTipo(x: string) {
-        return x === "Personagem" ? "#21366B"
-                : x === "Suporte" ? "#53216B"
-                : x === "Campo" ? "#216B35"
-                : x === "Base" || x === "Avançado" ? "#D4AF37"
-                : x === "Épico" ? "#C8911A"
-                : x === "Incomum" ? "#56BF72"
-                : x === "Raro" ? "#3960C2"
-                : x === "Ultra Raro" ? "#620D69"
-                : x === "Lendário" ? "#E6A71F"
-                : "white";
-    }
+    const [modalAberto, setModalAberto] = useState(false);
+
+    const [tituloModal, setTituloModal] = useState("");
+    const [mensagemModal, setMensagemModal] = useState("");
+
+    const [tipoModal, setTipoModal] = useState< "erro" | "sucesso" | "pacote" | "detalhesPacote" >("erro");
+
+    const [cartasRecebidas, setCartasRecebidas] = useState<CartaModal[]>([]);
+
+    const [pacoteDetalhes, setPacoteDetalhes] = useState<Pacote>()
 
     function checkCor(index: number) {
         if (index === indexSelecoes) {
             return "text_dinheiro";
         }
-        return "text-white";
+        return "text_indicesLoja";
     }
 
     function descricao() {
@@ -162,7 +174,6 @@ export default function TelaLoja() {
 
         if (indexSelecoes === 1) {
             const pacoteSelecionado = secoes[indexSelecoes].dados[indexSelecionado] as Pacote;
-            const raridades = ["Comum", "Incomum", "Raro",    "Ultra Raro", "Lendário"];
             return (
                 <div className="text-[clamp(20px,1.98vw,38px)] overflow-y-auto inventory-scrollbar">
                     <p style={{ color: pacoteSelecionado.cor }}>
@@ -251,6 +262,11 @@ export default function TelaLoja() {
 
             const exibicoes = secao.dados as ItemLoja[];
 
+            console.log("Mostando...")
+            console.log(exibicoes)
+            console.log(ofertas)
+            console.log(itens)
+
             if (exibicoes.length > 0) {
 
                 return (exibicoes.map
@@ -303,57 +319,107 @@ export default function TelaLoja() {
     }
 
     async function gerenciarCompra() {
+        if (indexSelecoes == 3) {
+            setTituloModal("Compra Inválida!");
+            setMensagemModal("Essa aba não possui compra implementada ainda!");
+            setTipoModal("erro");
+            setModalAberto(true);
+            return
+        }
         if (indexSelecionado === -1) {
-            alert("Por favor, selecione um item para comprar.")
+            setTituloModal("Compra nula!");
+            setMensagemModal("Certifique-se de que o item a ser comprado está selecionado.");
+            setTipoModal("erro");
+            setModalAberto(true);
             return
         }
         if (idUsuario === null) {
             alert("Por favor, faça login para realizar compras.")
             return
         }
-        if (indexSelecoes == 3) {
-            {/*Change*/}
-            alert("A compra só pode ser realizada em Ofertas ou Cartas Avulsas.")
-            return
-        }
         if (indexSelecoes == 1) {
             const pacoteSelecionado = secoes[indexSelecoes].dados[indexSelecionado] as Pacote;
             if (dinheiro < pacoteSelecionado.preco) {
-                alert("Saldo insuficiente para comprar este pacote.");
+                setTituloModal("Saldo insuficiente!");
+                setMensagemModal("Você não possui moedas suficientes para comprar este pacote.");
+                setTipoModal("erro");
+                setModalAberto(true);
                 return;
             }
+
+            try {
+                const response = await fetch(`http://localhost:8081/Loja/comprarPacote/${idUsuario}/${pacoteSelecionado.idPacote}`, {
+                    method: "POST"
+                });
+
+                const resultado = await response.json();
+
+                if (!response.ok) {
+                    setTituloModal("Não foi possível realizar a compra");
+                    setMensagemModal( resultado.erro || "Ocorreu um erro inesperado.");
+                    setTipoModal("erro");
+                    setModalAberto(true);
+                    return;
+                }
+
+                setDinheiro(resultado.novoSaldo)
+
+                setCartasRecebidas(resultado.cartas);
+                setTituloModal("Pacote aberto!");
+                setMensagemModal("Estas são as cinco cartas que você recebeu.");
+                setTipoModal("pacote");
+                setModalAberto(true);
+
+                console.log("Cartas recebidas: ")
+                console.table(resultado.cartas)
+
+                setIndexSelecionado(-1);
+
+            } catch (erro) {
+                console.error("Erro ao realizar compra de pacote:", erro);
+                setTituloModal("Erro de conexão");
+                setMensagemModal("Não foi possível conectar ao servidor.");
+                setTipoModal("erro");
+                setModalAberto(true);
+            }
+            return;
         }
+        if (indexSelecoes == 0 || indexSelecoes == 2) {
+            const itemSelecionado = secoes[indexSelecoes].dados[indexSelecionado] as ItemLoja;
+            const idItem = itemSelecionado.idLojaItem;
 
-        const itemSelecionado = secoes[indexSelecoes].dados[indexSelecionado] as ItemLoja;
-        const idItem = itemSelecionado.idLojaItem;
+            try {
+                const response = await fetch(`http://localhost:8081/Loja/comprar/${idUsuario}/${idItem}`, {
+                    method: "POST"
+                });
 
-        try {
-            const response = await fetch(`http://localhost:8081/Loja/comprar/${idUsuario}/${idItem}`, {
-                method: "POST"
-            });
+                const resultado = await response.json();
 
-            const resultado = await response.json();
+                if (!response.ok) {
+                    setTituloModal("Não foi possível realizar a compra");
+                    setMensagemModal( resultado.erro || "Ocorreu um erro inesperado.");
+                    setTipoModal("erro");
+                    setModalAberto(true);
+                    return;
+                }
 
-            if (!response.ok) {
-                alert(`Erro ao realizar compra: ${resultado.erro} mamou`);
-                return;
+                setDinheiro(resultado.novoSaldo);
+
+                setTituloModal("Compra realizada!");
+                setMensagemModal(`Carta ${itemSelecionado.carta_nome} comprada.\nNovo saldo: ${resultado.novoSaldo}G`);
+                setTipoModal("sucesso");
+                setModalAberto(true);
+
+                setIndexSelecionado(-1);
+                await carregarItens(idUsuario);
+
+            } catch (erro) {
+                console.error("Erro ao realizar compra:", erro);
+                setTituloModal("Erro de conexão");
+                setMensagemModal("Não foi possível conectar ao servidor.");
+                setTipoModal("erro");
+                setModalAberto(true);
             }
-
-            setDinheiro(resultado.novoSaldo);
-
-            {/*Change*/}
-            alert(
-                `${resultado.mensagem}\n` +
-                `Preço pago: ${resultado.precoPago} moedas\n` +
-                `Saldo atual: ${resultado.novoSaldo} moedas`
-            );
-
-            setIndexSelecionado(-1);
-            await carregarItens(idUsuario);
-
-        } catch (erro) {
-            console.error("Erro ao realizar compra:", erro);
-            alert("Não foi possível conectar à API.");
         }
     }
 
@@ -421,21 +487,45 @@ export default function TelaLoja() {
                         raio={20}
                         className="loja-hover w-[clamp(50px,13.03vw,250px)] h-[clamp(30px,9vh,85px)] flex items-center justify-center text-center text-[clamp(15px,2.240vw,43px)] mb-[clamp(21px,6.35vh,60px)]"
                         onClick={() => { 
-
-                            if (indexSelecionado === -1) {
-                                alert("Por favor, selecione um item para ver os detalhes.");
+                            if (indexSelecoes == 3) {
+                                setTituloModal("Função não implementada");
+                                setMensagemModal("A parte de detalhes ainda não foi implementada pra fundos de campo.");
+                                setTipoModal("erro");
+                                setModalAberto(true);
+                            }
+                            else if (indexSelecionado === -1) {
+                                setTituloModal("Item não selecionado");
+                                setMensagemModal("Selecione um item válido para ver detalhes.");
+                                setTipoModal("erro");
+                                setModalAberto(true);
                             }
                             else if ([0, 2].includes(indexSelecoes)) {
                                 const idSelecionado = (secoes[indexSelecoes].dados[indexSelecionado] as ItemLoja).idCarta;
                                 router.push(`/carta/${idSelecionado}/descricao`);
                             }
-
+                            else if (indexSelecoes == 1) {
+                                setPacoteDetalhes(pacotes[indexSelecionado])
+                                setTituloModal(`Pacote ${pacoteDetalhes?.raridade}`);
+                                setMensagemModal(pacoteDetalhes?.descricao as string);
+                                setTipoModal("detalhesPacote");
+                                setModalAberto(true);
+                            }
                         }}
                     />
                     {descricao()}
                 </aside>
 
             </div>
+            
+            <Modal
+                aberto={modalAberto}
+                titulo={tituloModal}
+                mensagem={mensagemModal}
+                tipo={tipoModal}
+                cartas={cartasRecebidas}
+                pacote={pacoteDetalhes}
+                onFechar={() => setModalAberto(false)}
+            />
 
         </main>
     )

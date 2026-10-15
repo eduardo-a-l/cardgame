@@ -67,6 +67,10 @@ h2, h1, p {
   color: #C8911A;
 }
 
+.text_indicesLoja {
+  color: #667ADD;
+}
+
 .loja-container {
   height: 75vh;
 }
