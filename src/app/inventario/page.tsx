@@ -106,7 +106,8 @@ export default function TelaInventario() {
                     {cartas.map((carta) => (
                         <div
                             key={carta.idInventario}
-                            className="w-full max-w-[209px] aspect-[209/301.4] bg-[#21366B] border-[5px] border-[#686868] rounded-[33px] shadow-sm flex items-center justify-center text-white text-[38px] text-center"
+                            onClick={() => router.push(`/carta/${carta.idInventario}/descricao?origem=inventario`)}
+                            className="w-full max-w-[209px] aspect-[209/301.4] bg-[#21366B] border-[5px] border-[#686868] rounded-[33px] shadow-sm flex items-center justify-center text-white text-[38px] text-center cursor-pointer transition-transform hover:scale-105"
                         >
                             {carta.nome}
                         </div>
