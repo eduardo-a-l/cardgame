@@ -1,28 +1,13 @@
 "use client";
-
-import { JSX, useState } from "react";
-import { useRouter } from "next/navigation";
+{/*, useState*/}
+import { JSX } from "react";
+//import { useRouter } from "next/navigation";
 import { Botao } from "@/components/ui/Botao";
 import { NomeIcone } from "@/components/ui/Icone";
 import { Icone } from "@/components/ui/Icone";
 
 export default function TelaBatalha() {
-    const router = useRouter();
-
-    const nomes = [
-        "Espada",
-        "Escudo",
-        "Arco",
-        "Poção",
-        "Capacete",
-        "Armadura",
-        "Machado",
-        "Lança",
-        "Arco Mágico",
-        "Anel",
-        "Botas",
-        "Colar"
-    ];
+    //const router = useRouter();
 
     function exibirCarta(borda: string, largura: string[], 
                          altura: string, nomeImagem: string, 
@@ -81,7 +66,7 @@ export default function TelaBatalha() {
                 {/*Campo de Batalha */}
                 <div className="flex items-center h-[53vh]">
                     {/*Carta Jogador*/}
-                    <div className="flex items-center justify-center w-[50%] h-[100%] bg-[#363C4B]  gap-[20px]">
+                    <div className="flex items-center justify-center w-[50%] h-full bg-[#363C4B]  gap-[20px]">
                         
                         <div className="flex flex-col">
                             <h1 className="text_dinheiro text-[30px]">Você</h1>
@@ -97,7 +82,7 @@ export default function TelaBatalha() {
                     </div>
                     
                     {/*Carta Oponente*/}
-                    <div className="flex items-center justify-center w-[50%] h-[100%] bg-[#363C4B] gap-[20px]">
+                    <div className="flex items-center justify-center w-[50%] h-full bg-[#363C4B] gap-[20px]">
                         
                         <div className="flex flex-col">
                             <h1 className="text-[30px]" style={{ color: "#B4B4B4" }}>
@@ -129,7 +114,7 @@ export default function TelaBatalha() {
 
                     </div>
 
-                    <div className="flex justify-around items-center h-[100%]">
+                    <div className="flex justify-around items-center h-full">
 
                         {exibirCarta("border-[#686868]", ["w-[clamp(100px,7.8125vw,150px)]", ""], "h-[clamp(150px,20.3704vh,220px)]", "", "Carta", "text-[20px]", "rounded-[25px]", "bg-[#21366B]", true)}
                         {exibirCarta("border-[#686868]", ["w-[clamp(100px,7.8125vw,150px)]", ""], "h-[clamp(150px,20.3704vh,220px)]", "", "Carta", "text-[20px]", "rounded-[25px]", "bg-[#21366B]", true)}
@@ -139,7 +124,7 @@ export default function TelaBatalha() {
 
                         <div className="flex flex-col items-end gap-[25px] w-[32%] pr-[30px]">
 
-                            <div className="flex justify-between w-[100%] gap-[20px]">
+                            <div className="flex justify-between w-full gap-[20px]">
 
                                 <Botao
                                     texto="Ação 1"      

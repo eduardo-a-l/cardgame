@@ -355,7 +355,7 @@ function PerfilConteudo() {
                             Pontos: {usuario.pontos}
                         </h1>
 
-                        <h1 className="text-[clamp(40px,3.125vw,60px)]">
+                        <h1 className="text-[clamp(40px,3.125vw,60px)] text_dinheiro">
                             Moedas: {usuario.moedas}G
                         </h1>
 

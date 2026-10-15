@@ -67,12 +67,21 @@ h2, h1, p {
   color: #C8911A;
 }
 
+.text_indicesLoja {
+  color: #667ADD;
+}
+
 .loja-container {
   height: 75vh;
 }
 
-.loja-container aside h2:hover{
-  color: #C8911A;
+.loja-hover {
+  cursor: pointer;
+  transition: transform 0.3s ease-in-out;
+}
+
+.loja-hover:hover {
+  transform: scale(1.05);
 }
 
 .header-loja .text_dinheiro, .botao-sair-loja {
