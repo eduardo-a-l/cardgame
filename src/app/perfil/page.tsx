@@ -405,12 +405,12 @@ function PerfilConteudo() {
                                 >
 
                                     <div
-                                        className="w-[10.4167vw] aspect-square rounded-[5px] shadow-sm flex items-center justify-center"
+                                        className="w-[10.4167vw] h-[10.4167vw] shrink-0 rounded-[5px] shadow-sm flex items-center justify-center overflow-hidden"
                                         style={{ backgroundColor: cor }}
                                     >
                                         <Icone
                                             nome={img}
-                                            tamanho="9.375vw"
+                                            tamanho="75%"
                                         />
                                     </div>
 

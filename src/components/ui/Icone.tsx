@@ -14,6 +14,52 @@ import IconeLanca from "@/assets/icons/lanca.svg";
 import IconeEspada from "@/assets/icons/espada.svg";
 import IconeCadeado from "@/assets/icons/cadeado.svg";
 
+import IconeAFlorDaVida from "@/assets/conquistas/a-flor-da-vida.svg";
+import IconeAGrandeVirada from "@/assets/conquistas/a-grande-virada.svg";
+import IconeAcumulador from "@/assets/conquistas/acumulador.svg";
+import IconeAtaqueNoEscuro from "@/assets/conquistas/ataque-no-escuro.svg";
+import IconeAtravesDaNevoa from "@/assets/conquistas/atraves-da-nevoa.svg";
+import IconeAutoSabotagem from "@/assets/conquistas/auto-sabotagem.svg";
+import IconeAutonomo from "@/assets/conquistas/autonomo.svg";
+import IconeCalmaAntesDaTempestade from "@/assets/conquistas/calma-antes-da-tempestade.svg";
+import IconeCaminhoDaMaestria from "@/assets/conquistas/caminho-da-maestria.svg";
+import IconeCampoPerfeito from "@/assets/conquistas/campo-perfeito.svg";
+import IconeColecionadorDeStatus from "@/assets/conquistas/colecionador-de-status.svg";
+import IconeContraAsProbabilidades from "@/assets/conquistas/contra-as-probabilidades.svg";
+import IconeContraAtaquePerfeito from "@/assets/conquistas/contra-ataque-perfeito.svg";
+import IconeCopia from "@/assets/conquistas/copia.svg";
+import IconeDeckCompleto from "@/assets/conquistas/deck-completo.svg";
+import IconeDerrubandoALenda from "@/assets/conquistas/derrubando-a-lenda.svg";
+import IconeDesperdicio from "@/assets/conquistas/desperdicio.svg";
+import IconeEspadachimSupremo from "@/assets/conquistas/espadachim-supremo.svg";
+import IconeEspionagem from "@/assets/conquistas/espionagem.svg";
+import IconeFeiticoContraOFeiticeiro from "@/assets/conquistas/feitico-contra-o-feiticeiro.svg";
+import IconeFortuna from "@/assets/conquistas/fortuna.svg";
+import IconeGuerraDeTerritorios from "@/assets/conquistas/guerra-de-territorios.svg";
+import IconeImunidade from "@/assets/conquistas/imunidade.svg";
+import IconeIntocavel from "@/assets/conquistas/intocavel.svg";
+import IconeMercador from "@/assets/conquistas/mercador.svg";
+import IconeMinhasRegrasMeuJogo from "@/assets/conquistas/minhas-regras-meu-jogo.svg";
+import IconeNadaMePara from "@/assets/conquistas/nada-me-para.svg";
+import IconeNoEmbalo from "@/assets/conquistas/no-embalo.svg";
+import IconeOPrimeiroPasso from "@/assets/conquistas/o-primeiro-passo.svg";
+import IconeOverkill from "@/assets/conquistas/overkill.svg";
+import IconeParedeDeFerro from "@/assets/conquistas/parede-de-ferro.svg";
+import IconePequenaFortuna from "@/assets/conquistas/pequena-fortuna.svg";
+import IconePorUmFio from "@/assets/conquistas/por-um-fio.svg";
+import IconePrecisaoCirurgica from "@/assets/conquistas/precisao-cirurgica.svg";
+import IconePreparadoParaABatalha from "@/assets/conquistas/preparado-para-a-batalha.svg";
+import IconePrimeiraCompra from "@/assets/conquistas/primeira-compra.svg";
+import IconeRefugio from "@/assets/conquistas/refugio.svg";
+import IconeRegeneracaoAbsoluta from "@/assets/conquistas/regeneracao-absoluta.svg";
+import IconeSaqueador from "@/assets/conquistas/saqueador.svg";
+import IconeSegundoFolego from "@/assets/conquistas/segundo-folego.svg";
+import IconeSobACoroa from "@/assets/conquistas/sob-a-coroa.svg";
+import IconeSolo from "@/assets/conquistas/solo.svg";
+import IconeSuperacaoDeVida from "@/assets/conquistas/superacao-de-vida.svg";
+import IconeTurnoPerfeito from "@/assets/conquistas/turno-perfeito.svg";
+import IconeVariedade from "@/assets/conquistas/variedade.svg";
+
 const icones = {
   leaderboard: IconeLeaderboard,
   usuario: IconeUsuario,
@@ -28,6 +74,52 @@ const icones = {
   espada: IconeEspada,
   lança: IconeLanca,
   cadeado: IconeCadeado,
+
+  aflordavida: IconeAFlorDaVida,
+  agrandevirada: IconeAGrandeVirada,
+  acumulador: IconeAcumulador,
+  ataquenoescuro: IconeAtaqueNoEscuro,
+  atravesdanevoa: IconeAtravesDaNevoa,
+  autosabotagem: IconeAutoSabotagem,
+  autonomo: IconeAutonomo,
+  calmaantesdatempestade: IconeCalmaAntesDaTempestade,
+  caminhodamaestria: IconeCaminhoDaMaestria,
+  campoperfeito: IconeCampoPerfeito,
+  colecionadordestatus: IconeColecionadorDeStatus,
+  contraasprobabilidades: IconeContraAsProbabilidades,
+  contraataqueperfeito: IconeContraAtaquePerfeito,
+  copia: IconeCopia,
+  deckcompleto: IconeDeckCompleto,
+  derrubandoalenda: IconeDerrubandoALenda,
+  desperdicio: IconeDesperdicio,
+  espadachimsupremo: IconeEspadachimSupremo,
+  espionagem: IconeEspionagem,
+  feiticocontraofeiticeiro: IconeFeiticoContraOFeiticeiro,
+  fortuna: IconeFortuna,
+  guerradeterritorios: IconeGuerraDeTerritorios,
+  imunidade: IconeImunidade,
+  intocavel: IconeIntocavel,
+  mercador: IconeMercador,
+  minhasregrasmeujogo: IconeMinhasRegrasMeuJogo,
+  nadamepara: IconeNadaMePara,
+  noembalo: IconeNoEmbalo,
+  oprimeiropasso: IconeOPrimeiroPasso,
+  overkill: IconeOverkill,
+  parededeferro: IconeParedeDeFerro,
+  pequenafortuna: IconePequenaFortuna,
+  porumfio: IconePorUmFio,
+  precisaocirurgica: IconePrecisaoCirurgica,
+  preparadoparaabatalha: IconePreparadoParaABatalha,
+  primeiracompra: IconePrimeiraCompra,
+  refugio: IconeRefugio,
+  regeneracaoabsoluta: IconeRegeneracaoAbsoluta,
+  saqueador: IconeSaqueador,
+  segundofolego: IconeSegundoFolego,
+  sobacoroa: IconeSobACoroa,
+  solo: IconeSolo,
+  superacaodevida: IconeSuperacaoDeVida,
+  turnoperfeito: IconeTurnoPerfeito,
+  variedade: IconeVariedade,
 } as const;
 
 export type NomeIcone = keyof typeof icones;
@@ -44,6 +136,11 @@ export function Icone({
   ...props
 }: IconeProps) {
   const IconeSelecionado = icones[nome];
+
+  if (!IconeSelecionado) {
+    console.warn(`[Icone] Ícone não encontrado para a chave: "${nome}"`);
+    return null;
+  }
 
   return (
     <IconeSelecionado
