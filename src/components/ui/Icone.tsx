@@ -27,7 +27,7 @@ import IconeCampoPerfeito from "@/assets/conquistas/campo-perfeito.svg";
 import IconeColecionadorDeStatus from "@/assets/conquistas/colecionador-de-status.svg";
 import IconeContraAsProbabilidades from "@/assets/conquistas/contra-as-probabilidades.svg";
 import IconeContraAtaquePerfeito from "@/assets/conquistas/contra-ataque-perfeito.svg";
-import IconeCopia from "@/assets/conquistas/Copia.svg";
+import IconeCopia from "@/assets/conquistas/copia.svg";
 import IconeDeckCompleto from "@/assets/conquistas/deck-completo.svg";
 import IconeDerrubandoALenda from "@/assets/conquistas/derrubando-a-lenda.svg";
 import IconeDesperdicio from "@/assets/conquistas/desperdicio.svg";
@@ -75,50 +75,50 @@ const icones = {
   lança: IconeLanca,
   cadeado: IconeCadeado,
 
-  aFlorDaVida: IconeAFlorDaVida,
-  aGrandeVirada: IconeAGrandeVirada,
+  aflordavida: IconeAFlorDaVida,
+  agrandevirada: IconeAGrandeVirada,
   acumulador: IconeAcumulador,
-  ataqueNoEscuro: IconeAtaqueNoEscuro,
-  atravesDaNevoa: IconeAtravesDaNevoa,
-  autoSabotagem: IconeAutoSabotagem,
+  ataquenoescuro: IconeAtaqueNoEscuro,
+  atravesdanevoa: IconeAtravesDaNevoa,
+  autosabotagem: IconeAutoSabotagem,
   autonomo: IconeAutonomo,
-  calmaAntesDaTempestade: IconeCalmaAntesDaTempestade,
-  caminhoDaMaestria: IconeCaminhoDaMaestria,
-  campoPerfeito: IconeCampoPerfeito,
-  colecionadorDeStatus: IconeColecionadorDeStatus,
-  contraAsProbabilidades: IconeContraAsProbabilidades,
-  contraAtaquePerfeito: IconeContraAtaquePerfeito,
+  calmaantesdatempestade: IconeCalmaAntesDaTempestade,
+  caminhodamaestria: IconeCaminhoDaMaestria,
+  campoperfeito: IconeCampoPerfeito,
+  colecionadordestatus: IconeColecionadorDeStatus,
+  contraasprobabilidades: IconeContraAsProbabilidades,
+  contraataqueperfeito: IconeContraAtaquePerfeito,
   copia: IconeCopia,
-  deckCompleto: IconeDeckCompleto,
-  derrubandoALenda: IconeDerrubandoALenda,
+  deckcompleto: IconeDeckCompleto,
+  derrubandoalenda: IconeDerrubandoALenda,
   desperdicio: IconeDesperdicio,
-  espadachimSupremo: IconeEspadachimSupremo,
+  espadachimsupremo: IconeEspadachimSupremo,
   espionagem: IconeEspionagem,
-  feiticoContraOFeiticeiro: IconeFeiticoContraOFeiticeiro,
+  feiticocontraofeiticeiro: IconeFeiticoContraOFeiticeiro,
   fortuna: IconeFortuna,
-  guerraDeTerritorios: IconeGuerraDeTerritorios,
+  guerradeterritorios: IconeGuerraDeTerritorios,
   imunidade: IconeImunidade,
   intocavel: IconeIntocavel,
   mercador: IconeMercador,
-  minhasRegrasMeuJogo: IconeMinhasRegrasMeuJogo,
-  nadaMePara: IconeNadaMePara,
-  noEmbalo: IconeNoEmbalo,
-  oPrimeiroPasso: IconeOPrimeiroPasso,
+  minhasregrasmeujogo: IconeMinhasRegrasMeuJogo,
+  nadamepara: IconeNadaMePara,
+  noembalo: IconeNoEmbalo,
+  oprimeiropasso: IconeOPrimeiroPasso,
   overkill: IconeOverkill,
-  paredeDeFerro: IconeParedeDeFerro,
-  pequenaFortuna: IconePequenaFortuna,
-  porUmFio: IconePorUmFio,
-  precisaoCirurgica: IconePrecisaoCirurgica,
-  preparadoParaABatalha: IconePreparadoParaABatalha,
-  primeiraCompra: IconePrimeiraCompra,
+  parededeferro: IconeParedeDeFerro,
+  pequenafortuna: IconePequenaFortuna,
+  porumfio: IconePorUmFio,
+  precisaocirurgica: IconePrecisaoCirurgica,
+  preparadoparaabatalha: IconePreparadoParaABatalha,
+  primeiracompra: IconePrimeiraCompra,
   refugio: IconeRefugio,
-  regeneracaoAbsoluta: IconeRegeneracaoAbsoluta,
+  regeneracaoabsoluta: IconeRegeneracaoAbsoluta,
   saqueador: IconeSaqueador,
-  segundoFolego: IconeSegundoFolego,
-  sobACoroa: IconeSobACoroa,
+  segundofolego: IconeSegundoFolego,
+  sobacoroa: IconeSobACoroa,
   solo: IconeSolo,
-  superacaoDeVida: IconeSuperacaoDeVida,
-  turnoPerfeito: IconeTurnoPerfeito,
+  superacaodevida: IconeSuperacaoDeVida,
+  turnoperfeito: IconeTurnoPerfeito,
   variedade: IconeVariedade,
 } as const;
 
@@ -136,6 +136,11 @@ export function Icone({
   ...props
 }: IconeProps) {
   const IconeSelecionado = icones[nome];
+
+  if (!IconeSelecionado) {
+    console.warn(`[Icone] Ícone não encontrado para a chave: "${nome}"`);
+    return null;
+  }
 
   return (
     <IconeSelecionado
