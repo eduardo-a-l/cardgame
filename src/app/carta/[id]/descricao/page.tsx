@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import Back from "@/components/ui/Back/Back";
+import { Botao } from "@/components/ui/Botao";
 import DescricaoCarta from "@/components/ui/DescricaoCarta/DescricaoCarta";
 import CardCarta from "@/components/ui/CardCarta/CardCarta";
 import Modal from "@/components/layout/Modal";
@@ -168,15 +168,18 @@ function DescricaoConteudo() {
 
     return (
         <div className="flex flex-col bg-custom-blue items-center w-full min-h-screen relative overflow-x-hidden p-4 sm:p-6 md:p-8">
-            <button 
-                onClick={() => router.back()} 
-                className="flex items-center gap-2 text-[clamp(1.25rem,2.5vmin,1.75rem)] cursor-pointer hover:scale-105 transition-all absolute left-[clamp(1rem,3vw,2.5rem)] top-[clamp(1rem,3vh,2rem)] text-white z-10"
-            >
-                <span className="w-[clamp(1.5rem,2.8vmin,2rem)] h-[clamp(1.5rem,2.8vmin,2rem)] flex items-center justify-center">
-                    <Back />
-                </span>
-                Voltar
-            </button>
+            <div className="absolute top-10 left-10 z-10">
+                <Botao
+                    texto="Voltar"
+                    nomeIcone="voltar"
+                    tamanhoIcone={40}
+                    corDoTexto="#FFFFFF"
+                    corDeFundo="transparent"
+                    corDaBorda="transparent"
+                    className="px-0 py-0 text-3xl"
+                    onClick={() => router.back()}
+                />
+            </div>
 
             <div className="flex flex-col mt-[clamp(2.5rem,6vh,4rem)] mb-[clamp(1rem,3vh,2rem)] text-center">
                 <h1 className="text-[clamp(1.75rem,3.8vmin,2.75rem)] font-bold text-white">

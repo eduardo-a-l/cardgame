@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import Back from "@/components/ui/Back/Back";
+import { Botao } from "@/components/ui/Botao";
 
 interface Carta {
   idInventario: number;
@@ -264,15 +264,18 @@ function MontarBaralhoConteudo() {
   if (erroServidor) {
     return (
       <div className="flex flex-col bg-custom-blue items-center w-full min-h-screen relative justify-center p-6 text-white">
-        <button
-          onClick={() => router.push("/meus-baralhos")}
-          className="flex items-center gap-2.5 text-2xl sm:text-3xl cursor-pointer hover:scale-105 transition-all absolute left-6 top-6 sm:left-10 sm:top-10 text-white z-10"
-        >
-          <div className="w-8 h-8 flex items-center justify-center">
-            <Back />
-          </div>
-          <span>Voltar</span>
-        </button>
+        <div className="absolute top-10 left-10 z-10">
+          <Botao
+            texto="Voltar"
+            nomeIcone="voltar"
+            tamanhoIcone={40}
+            corDoTexto="#FFFFFF"
+            corDeFundo="transparent"
+            corDaBorda="transparent"
+            className="px-0 py-0 text-3xl"
+            onClick={() => router.push("/meus-baralhos")}
+          />
+        </div>
 
         <p className="text-white text-2xl text-center">
           Não foi possível conectar-se com o servidor
@@ -294,15 +297,18 @@ function MontarBaralhoConteudo() {
 
   return (
     <div className="flex flex-col bg-custom-blue items-center w-full min-h-screen relative text-white p-6 justify-between">
-      <button
-        onClick={() => router.push("/meus-baralhos")}
-        className="flex items-center gap-2.5 text-2xl sm:text-3xl cursor-pointer hover:scale-105 transition-all absolute left-6 top-6 sm:left-10 sm:top-10 text-white z-10"
-      >
-        <div className="w-8 h-8 flex items-center justify-center">
-          <Back />
-        </div>
-        <span>Voltar</span>
-      </button>
+      <div className="absolute top-10 left-10 z-10">
+        <Botao
+          texto="Voltar"
+          nomeIcone="voltar"
+          tamanhoIcone={40}
+          corDoTexto="#FFFFFF"
+          corDeFundo="transparent"
+          corDaBorda="transparent"
+          className="px-0 py-0 text-3xl"
+          onClick={() => router.push("/meus-baralhos")}
+        />
+      </div>
 
       <div className="flex flex-col items-center mt-12 sm:mt-6 mb-2">
         <h1 className="text-4xl sm:text-5xl font-bold tracking-wide">
