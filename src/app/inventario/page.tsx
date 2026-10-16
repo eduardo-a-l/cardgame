@@ -99,7 +99,7 @@ export default function TelaInventario() {
 
             </div>
 
-            <div className="h-[75vh] w-[95vw] md:w-[90vw] xl:w-[85vw] mt-12 overflow-y-auto inventory-scrollbar">
+            <div className="h-[75vh] w-[95vw] md:w-[90vw] xl:w-[85vw] mt-10 pt-2 overflow-y-auto inventory-scrollbar">
 
                 <div className="grid grid-cols-5 gap-[3vw] justify-items-center">
 
@@ -107,7 +107,7 @@ export default function TelaInventario() {
                         <div
                             key={carta.idInventario}
                             onClick={() => router.push(`/carta/${carta.idInventario}/descricao?origem=inventario`)}
-                            className="w-full max-w-[209px] aspect-[209/301.4] bg-[#21366B] border-[5px] border-[#686868] rounded-[33px] shadow-sm flex items-center justify-center text-white text-[38px] text-center cursor-pointer transition-transform hover:scale-105"
+                            className={`w-full max-w-[209px] aspect-[209/301.4] ${carta.tipo == "Personagem" ? "bg-[#21366B]" : carta.tipo == "Suporte" ? "bg-[#53216B]" : "bg-[#216B35]"} border-[5px] border-[#686868] rounded-[33px] shadow-sm flex items-center justify-center text-white text-[38px] text-center cursor-pointer transition-transform hover:scale-105`}
                         >
                             {carta.nome}
                         </div>

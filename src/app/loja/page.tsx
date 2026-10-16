@@ -262,11 +262,6 @@ export default function TelaLoja() {
 
             const exibicoes = secao.dados as ItemLoja[];
 
-            console.log("Mostando...")
-            console.log(exibicoes)
-            console.log(ofertas)
-            console.log(itens)
-
             if (exibicoes.length > 0) {
 
                 return (exibicoes.map
@@ -302,7 +297,7 @@ export default function TelaLoja() {
                                     style={{ backgroundColor: item.cor,
                                              borderColor: corTipo(item.raridade)
                                      }}
-                                    onClick={() => { setIndexSelecionado(index); }}
+                                    onClick={() => { setIndexSelecionado(index);}}
                                     className="loja-hover w-full max-w-[209px] aspect-[209/301.4] border-[5px] rounded-[33px] shadow-sm flex flex-col items-center justify-center text-white text-[38px] text-center"
                                 >
                                     <p className="text-[clamp(24px,1.5vw,29px)] text-center">{item.raridade}</p>
@@ -505,8 +500,8 @@ export default function TelaLoja() {
                             }
                             else if (indexSelecoes == 1) {
                                 setPacoteDetalhes(pacotes[indexSelecionado])
-                                setTituloModal(`Pacote ${pacoteDetalhes?.raridade}`);
-                                setMensagemModal(pacoteDetalhes?.descricao as string);
+                                setTituloModal("");
+                                setMensagemModal("");
                                 setTipoModal("detalhesPacote");
                                 setModalAberto(true);
                             }

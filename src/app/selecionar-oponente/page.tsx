@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Back from "@/components/ui/icons/Back";
 import { Botao } from "@/components/ui/Botao";
+import Modal from "@/components/layout/Modal";
 
 interface Usuario {
   idUsuario: number;
@@ -21,6 +22,7 @@ export default function Selecionar_oponente() {
   const [pin, setPin] = useState("");
   const [erro, setErro] = useState("");
   const [erroServidor, setErroServidor] = useState(false);
+  const [modalAberto, setModalAberto] = useState(false);
 
   useEffect(() => {
     async function carregarDados() {
@@ -77,11 +79,13 @@ export default function Selecionar_oponente() {
 
     if (!oponenteSelecionado) {
       setErro("Selecione um oponente.");
+      setModalAberto(true)
       return;
     }
 
     if (!pin) {
       setErro("Digite o PIN do oponente.");
+      setModalAberto(true)
       return;
     }
 
@@ -90,6 +94,7 @@ export default function Selecionar_oponente() {
 
     if (isNaN(pinDigitado) || pinDigitado !== pinEsperado) {
       setErro("PIN incorreto para o oponente selecionado.");
+      setModalAberto(true)
       return;
     }
 
@@ -162,19 +167,22 @@ export default function Selecionar_oponente() {
             />
           </div>
 
-          {erro && (
-            <p className="text-red-400 text-center text-xl mt-6">{erro}</p>
-          )}
-
           <div className="flex justify-center">
             <Botao
               texto="Continuar"
-              className="w-[clamp(300px,20.833vw,400px)] cursor-pointer h-[100px] text-[clamp(32px,2.708vw,52px)] rounded-md border-5 mt-[20vh] tall:mt-[30vh] hover:scale-105 transition-all flex items-center justify-center"
+              className="cursor-pointer w-[clamp(300px,20.833vw,400px)] h-[100px] text-[clamp(32px,2.708vw,52px)] rounded-md border-5 mt-[20vh] tall:mt-[30vh] hover:scale-105 transition-all flex items-center justify-center"
               onClick={handleContinuar}
             />
           </div>
         </div>
       </div>
+      <Modal
+                aberto={modalAberto}
+                titulo={"Erro na seleção"}
+                mensagem={erro}
+                tipo={"erro"}
+                onFechar={() => setModalAberto(false)}
+      />
     </main>
   );
 }
