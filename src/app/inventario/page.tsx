@@ -15,6 +15,7 @@ interface Carta {
     vida: number | null;
     acao1: string | null;
     acao2: string | null;
+    emBaralho?: boolean | number;
 }
 
 export default function TelaInventario() {
@@ -35,17 +36,34 @@ export default function TelaInventario() {
 
                 const usuario = JSON.parse(usuarioSalvo);
 
-                const response = await fetch(
-                    `http://localhost:8081/Inventario/${usuario.idUsuario}`
-                );
+                const [resInventario, resBaralhos] = await Promise.all([
+                    fetch(`http://localhost:8081/Inventario/${usuario.idUsuario}`),
+                    fetch(`http://localhost:8081/Baralho/usuario/${usuario.idUsuario}`).catch(() => null)
+                ]);
 
-                if (!response.ok) {
+                if (!resInventario.ok) {
                     throw new Error("Erro de conexão");
                 }
 
-                const dados: Carta[] = await response.json();
+                const dadosInventario: Carta[] = await resInventario.json();
 
-                setCartas(dados);
+                if (resBaralhos && resBaralhos.ok) {
+                    const baralhos = await resBaralhos.json();
+                    const idsEmBaralhos = new Set<number>(
+                        baralhos.flatMap((b: { Inventarios?: { idInventario: number }[] }) =>
+                            b.Inventarios?.map((item) => item.idInventario) || []
+                        )
+                    );
+
+                    const cartasMapeadas = dadosInventario.map((carta) => ({
+                        ...carta,
+                        emBaralho: carta.emBaralho ?? idsEmBaralhos.has(carta.idInventario)
+                    }));
+
+                    setCartas(cartasMapeadas);
+                } else {
+                    setCartas(dadosInventario);
+                }
             } catch (erro) {
                 console.error(erro);
                 setErroServidor(true);
@@ -80,7 +98,6 @@ export default function TelaInventario() {
         <main className="relative min-h-screen bg-[#1B1B2F] flex items-center justify-center p-4">
 
             <div className="absolute top-10 left-10 right-10 flex justify-between items-center">
-
                 <Botao
                     texto="Voltar"
                     nomeIcone="voltar"
@@ -96,25 +113,34 @@ export default function TelaInventario() {
                 </h1>
 
                 <div className="w-[154.03px] h-4"></div>
-
             </div>
 
             <div className="h-[75vh] w-[95vw] md:w-[90vw] xl:w-[85vw] mt-12 overflow-y-auto inventory-scrollbar">
-
                 <div className="grid grid-cols-5 gap-[3vw] justify-items-center">
 
-                    {cartas.map((carta) => (
-                        <div
-                            key={carta.idInventario}
-                            onClick={() => router.push(`/carta/${carta.idInventario}/descricao?origem=inventario`)}
-                            className="w-full max-w-[209px] aspect-[209/301.4] bg-[#21366B] border-[5px] border-[#686868] rounded-[33px] shadow-sm flex items-center justify-center text-white text-[38px] text-center cursor-pointer transition-transform hover:scale-105"
-                        >
-                            {carta.nome}
-                        </div>
-                    ))}
+                    {cartas.map((carta) => {
+                        const estaEmBaralho = Boolean(carta.emBaralho);
+
+                        return (
+                            <div
+                                key={carta.idInventario}
+                                onClick={() => router.push(`/carta/${carta.idInventario}/descricao?origem=inventario`)}
+                                className="relative w-full max-w-[209px] aspect-[209/301.4] bg-[#21366B] border-[5px] border-[#686868] rounded-[33px] shadow-sm flex items-center justify-center text-white text-[38px] text-center cursor-pointer transition-transform hover:scale-105 overflow-hidden"
+                            >
+                                {estaEmBaralho && (
+                                    <span className="absolute top-3 right-3 bg-[#C8911A] text-black text-[10px] font-bold px-2 py-1 rounded-full shadow-md border border-black pointer-events-none">
+                                        Em Baralho
+                                    </span>
+                                )}
+
+                                <span className="p-2 break-words">
+                                    {carta.nome}
+                                </span>
+                            </div>
+                        );
+                    })}
 
                 </div>
-
             </div>
 
         </main>
