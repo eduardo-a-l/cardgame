@@ -99,8 +99,8 @@ export default function Selecionar_oponente() {
   }
 
   return (
-    <div className="bg-gray-900 min-h-screen min-w-screen flex justify-center">
-      <div className="bg-blue flex flex-col min-h-screen max-w-full w-full relative shadow-black shadow-2xl">
+    <main className="relative h-screen bg-[#1B1B2F] flex justify-center">
+      <div className="bg-blue flex flex-col min-h-screen max-w-full w-full lg:w-[95vw] relative">
         <button
           className="w-44 h-12 hover:scale-105 transition-all flex justify-center cursor-pointer text-white text-4xl ml-8 mt-10 gap-2.5"
           onClick={() => router.push("/")}
@@ -109,33 +109,33 @@ export default function Selecionar_oponente() {
         </button>
 
         <div className="flex justify-center">
-          <p className="text-5xl text-white mt-13">Selecionar oponente</p>
+          <p className="text-[clamp(36px,3.125vw,60px)] text-white mt-5 tall:mt-13">Selecionar Oponente</p>
         </div>
 
         <div className="flex flex-col">
-          <div className="flex justify-between pr-15 pl-15 w-full text-3xl mt-40">
+          <div className="flex justify-between pr-15 pl-15 pb-5 w-full text-[clamp(24px,2.083vw,40px)] mt-35 tall:mt-40">
             <p className="text-white">Usuário</p>
             <p className="text-white">PIN de Batalha</p>
           </div>
 
           <div className="flex justify-between pr-15 pl-15">
-            <div className="relative">
+            <div className="relative flex items-center">
               <input
                 type="text"
                 readOnly
-                value={oponenteSelecionado?.nomeUsuario || "Escolher Oponente"}
-                className={`border border-gray-500 w-100 pl-2 h-10 ${
+                value={oponenteSelecionado?.nomeUsuario || "Procurar Usuário"}
+                className={`border-[5px] border-[#686868] w-[clamp(300px,36.458vw,700px)] pl-3 h-[clamp(40px,6.878vh,65px)] rounded-[5px] text-[clamp(16px,1.302vw,25px)] ${
                   !oponenteSelecionado ? "text-gray-400" : "text-white"
                 }`}
               />
               <button
-                className="absolute right-0 pr-2.5 pt-2 cursor-pointer text-white hover:scale-105 transition-all"
+                className="absolute right-0 pr-4.5 cursor-pointer text-white hover:scale-105 transition-all text-center text-[20px]"
                 onClick={() => setAberto(!aberto)}
               >
                 {aberto ? "▼" : "▲"}
               </button>
               {aberto && (
-                <ul className="absolute right-0 w-100 bg-gray-900 transition-all shadow-black shadow-2xl border-b border-r border-l border-gray-500 z-20 max-h-60 overflow-y-auto">
+                <ul className="absolute right-0 top-16 w-60 bg-gray-900 transition-all shadow-black shadow-2xl border-b border-r border-l border-gray-500 z-20 max-h-60 overflow-y-auto">
                   {oponentes.map((user) => (
                     <li
                       key={user.idUsuario}
@@ -154,11 +154,11 @@ export default function Selecionar_oponente() {
 
             <input
               placeholder="Digite o PIN"
-              type="text"
+              type="number"
               maxLength={4}
               value={pin}
               onChange={(e) => setPin(e.target.value)}
-              className="bg-blue-800 border border-white text-white rounded-md pl-2 h-10 w-100"
+              className="bg-[#21366B] border border-white text-white text-[clamp(16px,1.302vw,25px)] rounded-md pl-4 h-[clamp(40px,6.878vh,65px)] w-[clamp(300px,36.458vw,700px)]"
             />
           </div>
 
@@ -169,12 +169,12 @@ export default function Selecionar_oponente() {
           <div className="flex justify-center">
             <Botao
               texto="Continuar"
-              className="w-50 cursor-pointer h-14 text-3xl place-content-center bg-blue-900 rounded-md border-3 border-amber-400 mt-50 hover:scale-105 transition-all flex items-center justify-center"
+              className="w-[clamp(300px,20.833vw,400px)] cursor-pointer h-[100px] text-[clamp(32px,2.708vw,52px)] rounded-md border-5 mt-[20vh] tall:mt-[30vh] hover:scale-105 transition-all flex items-center justify-center"
               onClick={handleContinuar}
             />
           </div>
         </div>
       </div>
-    </div>
+    </main>
   );
 }

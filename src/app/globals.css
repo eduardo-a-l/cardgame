@@ -157,3 +157,6 @@ h2, h1, p {
 .ranking td:nth-child(4) {
   color: #e5ad00;
 }
+
+@custom-variant medium (@media (min-height: 768px));
+@custom-variant tall (@media (min-height: 900px));
