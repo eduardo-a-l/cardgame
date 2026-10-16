@@ -42,7 +42,7 @@ export default function TelaLeaderboard() {
   if (erroServidor) {
     return (
       <main className="relative min-h-screen bg-[#1B1B2F] flex items-center justify-center p-4">
-        <div className="absolute top-10 left-10">
+        <div className="absolute top-10 left-10 z-10">
           <Botao
             texto="Voltar"
             nomeIcone="voltar"
@@ -86,7 +86,7 @@ export default function TelaLeaderboard() {
 
   return (
     <main className="relative min-h-screen bg-[#1B1B2F]">
-      <div className="absolute m-10">
+      <div className="absolute top-10 left-10 z-10">
         <Botao
           texto="Voltar"
           nomeIcone="voltar"

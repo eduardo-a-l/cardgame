@@ -262,11 +262,6 @@ export default function TelaLoja() {
 
             const exibicoes = secao.dados as ItemLoja[];
 
-            console.log("Mostando...")
-            console.log(exibicoes)
-            console.log(ofertas)
-            console.log(itens)
-
             if (exibicoes.length > 0) {
 
                 return (exibicoes.map
@@ -370,9 +365,6 @@ export default function TelaLoja() {
                 setTipoModal("pacote");
                 setModalAberto(true);
 
-                console.log("Cartas recebidas: ")
-                console.table(resultado.cartas)
-
                 setIndexSelecionado(-1);
 
             } catch (erro) {
@@ -435,8 +427,8 @@ export default function TelaLoja() {
                     corDeFundo="transparent"
                     corDaBorda="transparent"
                     corDoTexto="#FFFFFF"
+                    className="px-0 py-0 text-3xl loja-hover"
                     onClick={() => router.push("/")}
-                    className="botao-sair-loja loja-hover"
                 />
 
                 <h1 className="text-[53px] text-white">Loja</h1>
