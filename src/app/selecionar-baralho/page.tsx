@@ -83,7 +83,7 @@ function SelecionarBaralhoConteudo() {
   if (erroServidor) {
     return (
       <main className="relative h-screen bg-[#1B1B2F] flex items-center justify-center p-4">
-        <div className="absolute top-10 left-10">
+        <div className="absolute top-10 left-10 z-10">
           <Botao
             texto="Voltar"
             nomeIcone="voltar"
@@ -112,7 +112,7 @@ function SelecionarBaralhoConteudo() {
 
   return (
     <main className="relative h-screen bg-[#1B1B2F] overflow-hidden">
-      <div className="absolute m-10">
+      <div className="absolute top-10 left-10 z-10">
         <Botao
           texto="Voltar"
           nomeIcone="voltar"

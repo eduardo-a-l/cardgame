@@ -98,7 +98,7 @@ function PerfilConteudo() {
     if (erroServidor) {
         return (
             <main className="relative min-h-screen bg-[#1B1B2F] flex items-center justify-center p-4">
-                <div className="absolute top-10 left-10">
+                <div className="absolute top-10 left-10 z-10">
                     <Botao
                         texto="Voltar"
                         nomeIcone="voltar"
@@ -106,6 +106,7 @@ function PerfilConteudo() {
                         corDeFundo="transparent"
                         corDaBorda="transparent"
                         corDoTexto="#FFFFFF"
+                        className="px-0 py-0 text-3xl"
                         onClick={() => idParam ? router.back() : router.push("/")}
                     />
                 </div>
@@ -226,7 +227,7 @@ function PerfilConteudo() {
     return (
         <main className="relative min-h-screen bg-[#1B1B2F] flex items-center justify-center w-full">
 
-            <div className="absolute top-10 left-10">
+            <div className="absolute top-10 left-10 z-10">
                 <Botao
                     texto="Voltar"
                     nomeIcone="voltar"
@@ -234,6 +235,7 @@ function PerfilConteudo() {
                     corDeFundo="transparent"
                     corDaBorda="transparent"
                     corDoTexto="#FFFFFF"
+                    className="px-0 py-0 text-3xl"
                     onClick={() => idParam ? router.back() : router.push("/")}
                 />
             </div>

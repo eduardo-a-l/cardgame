@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import Back from "@/components/ui/icons/Back";
 import { Botao } from "@/components/ui/Botao";
 import Modal from "@/components/layout/Modal";
 
@@ -61,12 +60,18 @@ export default function Selecionar_oponente() {
   if (erroServidor) {
     return (
       <div className="bg-gray-900 min-h-screen min-w-screen flex items-center justify-center relative">
-        <button
-          className="w-44 h-12 hover:scale-105 transition-all flex justify-center cursor-pointer text-white text-4xl absolute top-10 left-8 gap-2.5"
-          onClick={() => router.push("/")}
-        >
-          <Back className="h-11 w-11" /> Voltar
-        </button>
+        <div className="absolute top-10 left-10 z-10">
+          <Botao
+            texto="Voltar"
+            nomeIcone="voltar"
+            tamanhoIcone={40}
+            corDoTexto="#FFFFFF"
+            corDeFundo="transparent"
+            corDaBorda="transparent"
+            className="px-0 py-0 text-3xl"
+            onClick={() => router.push("/")}
+          />
+        </div>
         <p className="text-white text-2xl text-center">
           Não foi possível conectar-se com o servidor
         </p>
@@ -104,14 +109,20 @@ export default function Selecionar_oponente() {
   }
 
   return (
-    <main className="relative h-screen bg-[#1B1B2F] flex justify-center">
-      <div className="bg-blue flex flex-col min-h-screen max-w-full w-full lg:w-[95vw] relative">
-        <button
-          className="w-44 h-12 hover:scale-105 transition-all flex justify-center cursor-pointer text-white text-4xl ml-8 mt-10 gap-2.5"
-          onClick={() => router.push("/")}
-        >
-          <Back className="h-11 w-11" /> Voltar
-        </button>
+    <main className="bg-gray-900 min-h-screen min-w-screen flex justify-center">
+      <div className="bg-blue flex flex-col min-h-screen max-w-full w-full relative shadow-black shadow-2xl">
+        <div className="absolute top-10 left-10 z-10">
+          <Botao
+            texto="Voltar"
+            nomeIcone="voltar"
+            tamanhoIcone={40}
+            corDoTexto="#FFFFFF"
+            corDeFundo="transparent"
+            corDaBorda="transparent"
+            className="px-0 py-0 text-3xl"
+            onClick={() => router.push("/")}
+          />
+        </div>
 
         <div className="flex justify-center">
           <p className="text-[clamp(36px,3.125vw,60px)] text-white mt-5 tall:mt-13">Selecionar Oponente</p>
