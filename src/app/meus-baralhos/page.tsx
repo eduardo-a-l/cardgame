@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import Back from "@/components/ui/Back/Back";
 import Modal from "@/components/layout/Modal";
 import { Botao } from "@/components/ui/Botao";
 
@@ -34,7 +33,7 @@ export default function MeusBaralhosPage() {
 	const [selecionado, setSelecionado] = useState<number | null>(null);
 	const [erro, setErro] = useState<string>("");
 	const [tituloErro, setTituloErro] = useState<string>("");
-	const [mostrarErro, setMostrarErro] = useState<boolean>(false)
+	const [mostrarErro, setMostrarErro] = useState<boolean>(false);
 	const [carregando, setCarregando] = useState<boolean>(true);
 	const [erroServidor, setErroServidor] = useState<boolean>(false);
 
@@ -121,16 +120,21 @@ export default function MeusBaralhosPage() {
 	if (erroServidor) {
 		return (
 			<div className="flex flex-col bg-custom-blue items-center w-full min-h-screen relative justify-center p-4">
-				<button
+				<div className="absolute top-10 left-10 z-10">
+				<Botao
+					texto="Voltar"
+					nomeIcone="voltar"
+					tamanhoIcone={40}
+					corDoTexto="#FFFFFF"
+					corDeFundo="transparent"
+					corDaBorda="transparent"
+					className="px-0 py-0 text-3xl"
 					onClick={() => router.push("/")}
-					className="flex justify-center w-40 h-10 cursor-pointer hover:scale-105 transition-all gap-1.5 text-4xl mt-10 ml-10 absolute left-0 top-0 text-white"
-				>
-					<Back />
-					Voltar
-				</button>
+				/>
+				</div>
 
 				<p className="text-white text-2xl text-center">
-					Não foi possível conectar-se com o servidor
+				Não foi possível conectar-se com o servidor
 				</p>
 			</div>
 		);
@@ -144,19 +148,20 @@ export default function MeusBaralhosPage() {
 		);
 	}
 
-	const metade = Math.ceil(baralhos.length / 2);
-	const coluna1 = baralhos.slice(0, metade);
-	const coluna2 = baralhos.slice(metade);
-
 	return (
 		<main className="flex flex-col bg-custom-blue items-center w-full min-h-screen relative">
-			<button
-				onClick={() => router.push("/")}
-				className="flex justify-center w-40 h-10 cursor-pointer hover:scale-105 transition-all gap-1.5 text-4xl mt-10 ml-10 absolute left-0 top-0 text-white"
-			>
-				<Back />
-				Voltar
-			</button>
+			<div className="absolute top-10 left-10 z-10">
+				<Botao
+					texto="Voltar"
+					nomeIcone="voltar"
+					tamanhoIcone={40}
+					corDoTexto="#FFFFFF"
+					corDeFundo="transparent"
+					corDaBorda="transparent"
+					className="px-0 py-0 text-3xl"
+					onClick={() => router.push("/")}
+				/>
+			</div>
 
 			<div className="flex flex-col mt-[clamp(55px,9.778vh,105.6px)]">
 				<p className="text-[clamp(32px,3vw,56px)] mb-12 text-white">Meus Baralhos</p>
@@ -167,45 +172,27 @@ export default function MeusBaralhosPage() {
 					Você ainda não possui nenhum baralho criado.
 				</p>
 			) : (
-				<div className="flex justify-center w-screen overflow-auto gap-30">
-					<div className="flex flex-col justify-start items-center w-[clamp(271.5px,18.854vw,362px)] h-[clamp(150px,42.667vh,460.8px)] overflow-auto">
-						{coluna1.map((baralho) => {
+				<div className="flex justify-center w-screen overflow-auto">
+					<div className="grid grid-cols-2 content-start justify-items-center gap-x-5 gap-y-5 w-[clamp(600px,48vw,1200px)] h-[clamp(150px,42.667vh,460.8px)] overflow-y-auto inventory-scrollbar">
+						{baralhos.map((baralho) => {
 							const estaSelecionado = selecionado === baralho.idBaralho;
-							return (
-								<Botao
-									texto= {baralho.nome}
-									key={baralho.idBaralho}
-									corDaBorda={estaSelecionado ? "#C8911A" : "#686868"}
-									corDeFundo={estaSelecionado ? "#C8911A" : "#21366B"}
-									raio={20}
-									className="cursor-pointer w-[clamp(300px,18.833vw,400px)] h-[clamp(55px,8.889vh,96px)] text-[clamp(32px,2.708vw,52px)] border-5 flex items-center justify-center"
-									onClick={() => {
-										setErro("");
-										setSelecionado(baralho.idBaralho);
-									}}
-								/>
-							);
-						})}
-					</div>
 
-					<div className="flex flex-col justify-start items-center w-[clamp(271.5px,18.854vw,362px)] h-[clamp(150px,42.667vh,460.8px)] overflow-auto">
-						{coluna2.map((baralho) => {
-							const estaSelecionado = selecionado === baralho.idBaralho;
 							return (
 								<Botao
-									texto= {baralho.nome}
+									texto={baralho.nome}
 									key={baralho.idBaralho}
 									corDaBorda={estaSelecionado ? "#C8911A" : "#686868"}
 									corDeFundo={estaSelecionado ? "#C8911A" : "#21366B"}
+									corDoTexto={estaSelecionado ? "black" : "white"}
 									raio={20}
-									className="cursor-pointer w-[clamp(300px,18.833vw,400px)] h-[clamp(55px,8.889vh,96px)] text-[clamp(32px,2.708vw,52px)] border-5 flex items-center justify-center"
+									className="loja-hover w-[clamp(250px,19vw,400px)] h-[clamp(55px,8.889vh,96px)] text-[clamp(32px,2.708vw,52px)] border-5 flex items-center justify-center"
 									onClick={() => {
 										setErro("");
 										setSelecionado(baralho.idBaralho);
 									}}
 								/>
-							);
-						})}
+        					);
+    					})}
 					</div>
 				</div>
 			)}

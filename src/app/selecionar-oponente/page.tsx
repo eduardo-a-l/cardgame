@@ -125,7 +125,7 @@ export default function Selecionar_oponente() {
         </div>
 
         <div className="flex justify-center">
-          <p className="text-[clamp(36px,3.125vw,60px)] text-white mt-5 tall:mt-13">Selecionar Oponente</p>
+          <p className="text-[clamp(36px,3.125vw,60px)] mt-5 tall:mt-13">Selecionar Oponente</p>
         </div>
 
         <div className="flex flex-col">
