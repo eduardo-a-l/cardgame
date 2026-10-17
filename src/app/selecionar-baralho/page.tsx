@@ -76,7 +76,7 @@ function SelecionarBaralhoConteudo() {
         `/selecionar-baralho?p1=${p1}&p2=${p2}&deck1=${selecionado}`
       );
     } else {
-      router.push("/");
+      router.push("/batalha");
     }
   }
 

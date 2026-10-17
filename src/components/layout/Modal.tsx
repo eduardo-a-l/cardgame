@@ -90,12 +90,12 @@ export default function Modal({
                     className={`mb-5 mt-2 text-center text-4xl font-bold sm:text-[clamp(35px,2.760vw,53px)] ${ tipo === "detalhesPacote" ? "mt-5" : "" } `}
                     style={{ color: corTitulo }}
                 >
-                    {titulo}
+                    {tipo == "detalhesPacote" ? `Pacote ${pacote?.raridade}` : titulo}
                 </h2>
 
                 {mensagem && (
                     <p className="mb-8 whitespace-pre-line text-center text-lg text-white/85 sm:text-3xl">
-                        {mensagem}
+                        {tipo == "detalhesPacote" ? pacote?.descricao : mensagem}
                     </p>
                 )}
 

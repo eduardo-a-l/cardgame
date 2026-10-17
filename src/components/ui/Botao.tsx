@@ -36,7 +36,7 @@ export function Botao({
         borderRadius: `${raio}px`,
         ...style,
       }}
-      className={`flex items-center gap-4 px-6 py-3 ${borda} text-lg ${className}`}
+      className={`cursor-pointer flex items-center gap-4 px-6 py-3 ${borda} text-lg ${className}`}
       {...props}
     >
       {nomeIcone && <Icone nome={nomeIcone} tamanho={tamanhoIcone} />}

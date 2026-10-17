@@ -84,7 +84,7 @@ export function BarraLateral({
           <button
             type="button"
             onClick={() => router.push("/perfil")}
-            className="flex flex-col items-center gap-1 w-14"
+            className="cursor-pointer flex flex-col items-center gap-1 w-14"
           >
             <FotoPerfil idUsuario={usuario.idUsuario} />
 

@@ -127,7 +127,7 @@ export default function TelaInventario() {
                             <div
                                 key={carta.idInventario}
                                 onClick={() => router.push(`/carta/${carta.idInventario}/descricao?origem=inventario`)}
-                                className="relative w-full max-w-[209px] aspect-[209/301.4] bg-[#21366B] border-[5px] border-[#686868] rounded-[33px] shadow-sm flex items-center justify-center text-white text-[38px] text-center cursor-pointer transition-transform hover:scale-105 overflow-hidden"
+                                className={`w-full max-w-[209px] aspect-[209/301.4] ${carta.tipo == "Personagem" ? "bg-[#21366B]" : carta.tipo == "Suporte" ? "bg-[#53216B]" : "bg-[#216B35]"} border-[5px] border-[#686868] rounded-[33px] shadow-sm flex items-center justify-center text-white text-[38px] text-center cursor-pointer transition-transform hover:scale-105`}
                             >
                                 {estaEmBaralho && (
                                     <span className="absolute top-3 right-3 bg-[#C8911A] text-black text-[10px] font-bold px-2 py-1 rounded-full shadow-md border border-black pointer-events-none">
