@@ -3,6 +3,8 @@
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Back from "@/components/ui/Back/Back";
+import Modal from "@/components/layout/Modal";
+import { Botao } from "@/components/ui/Botao";
 
 interface Carta {
   idInventario: number;
@@ -60,7 +62,10 @@ function MontarBaralhoConteudo() {
   const [carregando, setCarregando] = useState<boolean>(true);
   const [salvando, setSalvando] = useState<boolean>(false);
   const [erroServidor, setErroServidor] = useState<boolean>(false);
-  const [mensagemErro, setMensagemErro] = useState<string>("");
+  const [modalAberto, setModalAberto] = useState(false);
+  const [tituloModal, setTituloModal] = useState("");
+  const [mensagemModal, setMensagemModal] = useState("");
+  const [tipoModal, setTipoModal] = useState< "erro" | "sucesso" | "pacote" | "detalhesPacote" >("erro");
 
   useEffect(() => {
     async function carregarDados() {
@@ -161,16 +166,19 @@ function MontarBaralhoConteudo() {
 
   function adicionarCarta(carta: Carta) {
     if (baralhoAtual.length >= 20) {
-      setMensagemErro("O baralho não pode conter mais de 20 cartas.");
+      setMensagemModal("O baralho não pode conter mais de 20 cartas.");
+      setTituloModal("Baralho cheio!")
+      setTipoModal("erro")
+      setModalAberto(true)
       return;
     }
 
-    setMensagemErro("");
+    setMensagemModal("");
     setBaralhoAtual((prev) => [...prev, carta]);
   }
 
   function removerCarta(indexParaRemover: number) {
-    setMensagemErro("");
+    setMensagemModal("");
     setBaralhoAtual((prev) =>
       prev.filter((_, index) => index !== indexParaRemover)
     );
@@ -178,7 +186,10 @@ function MontarBaralhoConteudo() {
 
   async function handleSalvar() {
     if (!nomeBaralho.trim()) {
-      setMensagemErro("Por favor, digite um nome para o baralho.");
+      setMensagemModal("Escolha um nome para o seu baralho.");
+      setTituloModal("Nome vazio!")
+      setTipoModal("erro")
+      setModalAberto(true)
       return;
     }
 
@@ -190,7 +201,7 @@ function MontarBaralhoConteudo() {
 
     const usuario = JSON.parse(usuarioSalvo);
     setSalvando(true);
-    setMensagemErro("");
+    setMensagemModal("");
 
     try {
       let targetIdBaralho = idBaralhoParam ? Number(idBaralhoParam) : null;
@@ -240,30 +251,33 @@ function MontarBaralhoConteudo() {
       router.push("/meus-baralhos");
     } catch (err) {
       console.error(err);
-      setMensagemErro("Não foi possível salvar o baralho.");
+      setMensagemModal("Não foi possível salvar o baralho.");
+      setTituloModal("Erro ao salvar!")
+      setTipoModal("erro")
+      setModalAberto(true)
     } finally {
       setSalvando(false);
     }
   }
 
-  function getEstiloCarta(raridade: string, tipo: string) {
+  function getEstiloCarta(tipo: string) {
     const cardBase =
-      "w-20 h-32 md:w-24 md:h-36 rounded-2xl flex flex-col items-center justify-center transition-all p-1 text-center select-none";
+      "w-[clamp(101.25px,7.031vw,135px)] aspect-[209/301.4] rounded-[1vw] flex flex-col items-center justify-center p-1 text-center select-none border-[3px] border-[#686868] loja-hover";
 
-    if (raridade === "Raro" || tipo === "Mágica") {
-      return `${cardBase} bg-[#4f1e73] border-2 border-[#7731a8] text-white hover:scale-105 cursor-pointer`;
+    if (tipo === "Campo") {
+      return `${cardBase} bg-[#216B35]`;
     }
 
-    if (raridade === "Incomum" || tipo === "Equipamento") {
-      return `${cardBase} bg-[#1c5d36] border-2 border-[#2a8750] text-white hover:scale-105 cursor-pointer`;
+    if (tipo === "Suporte") {
+      return `${cardBase} bg-[#53216B]`;
     }
 
-    return `${cardBase} bg-[#1d386b] border-2 border-[#315699] text-white hover:scale-105 cursor-pointer`;
+      return `${cardBase} bg-[#21366B]`;
   }
 
   if (erroServidor) {
     return (
-      <div className="flex flex-col bg-custom-blue items-center w-full min-h-screen relative justify-center p-6 text-white">
+      <div className="flex flex-col bg-custom-blue items-center w-full min-h-screen relative justify-center pl-6 pr-6 pt-0 pb-0 text-white">
         <button
           onClick={() => router.push("/meus-baralhos")}
           className="flex items-center gap-2.5 text-2xl sm:text-3xl cursor-pointer hover:scale-105 transition-all absolute left-6 top-6 sm:left-10 sm:top-10 text-white z-10"
@@ -293,7 +307,7 @@ function MontarBaralhoConteudo() {
   const slotsVazios = Math.max(0, 20 - baralhoAtual.length);
 
   return (
-    <div className="flex flex-col bg-custom-blue items-center w-full min-h-screen relative text-white p-6 justify-between">
+    <main className="flex flex-col bg-custom-blue items-center w-full min-h-screen relative text-white pl-6 pr-6">
       <button
         onClick={() => router.push("/meus-baralhos")}
         className="flex items-center gap-2.5 text-2xl sm:text-3xl cursor-pointer hover:scale-105 transition-all absolute left-6 top-6 sm:left-10 sm:top-10 text-white z-10"
@@ -304,58 +318,52 @@ function MontarBaralhoConteudo() {
         <span>Voltar</span>
       </button>
 
-      <div className="flex flex-col items-center mt-12 sm:mt-6 mb-2">
-        <h1 className="text-4xl sm:text-5xl font-bold tracking-wide">
+      <div className="flex flex-col items-center mt-[clamp(30px,5.889vh,96px)] tall:mt-[clamp(55px,8.889vh,96px)]">
+        <h1 className="text-[clamp(32px,2.708vw,52px)] font-bold tracking-wide">
           {idBaralhoParam ? "Editar Baralho" : "Montar Baralho"}
         </h1>
       </div>
 
-      {mensagemErro && (
-        <p className="text-red-400 text-xl my-2 text-center">{mensagemErro}</p>
-      )}
-
-      <div className="flex flex-col lg:flex-row justify-center items-center lg:items-start gap-16 my-6">
+      <div className="flex flex-col lg:flex-row justify-center items-center lg:items-start gap-25 my-6">
         <div className="flex flex-col items-center">
-          <p className="text-3xl mb-6">
+          <p className="text-[clamp(30px,2.6042vw,50px)] mb-6">
             Baralho Atual ({baralhoAtual.length}/20)
           </p>
 
-          <div className="grid grid-cols-5 gap-3 p-3 max-h-[50vh] overflow-y-auto inventory-scrollbar">
+          <div className="grid grid-cols-5 gap-3 p-3 max-h-[46vh] overflow-y-auto inventory-scrollbar">
             {baralhoAtual.map((carta, index) => (
               <div
                 key={`${carta.idInventario}-${index}`}
-                className={getEstiloCarta(carta.raridade, carta.tipo)}
+                className={getEstiloCarta(carta.tipo)}
                 onClick={() => removerCarta(index)}
               >
-                <p className="text-sm font-semibold">{carta.nome}</p>
+                <p className="text-sm xl:text-xl">{carta.nome}</p>
               </div>
             ))}
 
             {Array.from({ length: slotsVazios }).map((_, i) => (
               <div
                 key={`vazio-${i}`}
-                className="w-20 h-32 md:w-24 md:h-36 rounded-2xl flex items-center justify-center bg-[#141525] border-2 border-[#2c3047]"
+                className="w-[clamp(101.25px,7.031vw,135px)] aspect-[209/301.4] rounded-[1vw] bg-[#141525] border-[3px] border-[#686868]"
               />
             ))}
           </div>
         </div>
 
         <div className="flex flex-col items-center">
-          <p className="text-3xl mb-6">Seu Inventário</p>
+          <p className="text-[clamp(30px,2.6042vw,50px)] mb-6">Seu Inventário</p>
 
-          <div className="grid grid-cols-5 gap-3 p-3 max-h-[50vh] overflow-y-auto inventory-scrollbar">
+          <div className="grid grid-cols-5 gap-3 p-3 max-h-[46vh] overflow-y-auto inventory-scrollbar">
             {inventario.map((carta) => {
-              const jaEstaNoBaralho = idsUsadosNoBaralho.includes(
-                carta.idInventario
-              );
+              const jaEstaNoBaralho = idsUsadosNoBaralho.filter(id => id === carta.idInventario).length >= 2;
 
               if (jaEstaNoBaralho) {
                 return (
                   <div
                     key={carta.idInventario}
-                    className="w-20 h-32 md:w-24 md:h-36 rounded-2xl flex items-center justify-center bg-[#181921] border-2 border-[#292a36] text-gray-600 opacity-60 p-1 text-center select-none"
+                    className="w-[clamp(101.25px,7.031vw,135px)] aspect-[209/301.4] rounded-[1vw] flex items-center justify-center bg-[#181921] border-[3px] border-[#686868] text-gray-600 opacity-60 p-1 text-center select-none"
                   >
-                    <p className="text-sm">{carta.nome}</p>
+                    <p className="text-sm 2xl:text-xl">{carta.nome}</p>
                   </div>
                 );
               }
@@ -363,10 +371,10 @@ function MontarBaralhoConteudo() {
               return (
                 <div
                   key={carta.idInventario}
-                  className={getEstiloCarta(carta.raridade, carta.tipo)}
+                  className={getEstiloCarta(carta.tipo)}
                   onClick={() => adicionarCarta(carta)}
                 >
-                  <p className="text-sm font-semibold">{carta.nome}</p>
+                    <p className="text-sm 2xl:text-xl">{carta.nome}</p>
                 </div>
               );
             })}
@@ -374,28 +382,35 @@ function MontarBaralhoConteudo() {
         </div>
       </div>
 
-      <div className="flex flex-col sm:flex-row items-center justify-between w-full max-w-5xl px-8 pb-6 gap-6">
-        <fieldset className="border border-gray-400 rounded-md px-4 py-1.5 w-full sm:w-96">
-          <legend className="text-xs text-gray-300 px-1.5 ml-2">
+      <div className="flex flex-col sm:flex-row items-center justify-between w-full max-w-5xl px-8 pt-10 gap-26">
+        <fieldset className="border border-gray-400 rounded-md px-4 py-1.5 w-full">
+          <legend className="text-sm text-gray-300 px-1.5 ml-2">
             Nome do Baralho
           </legend>
           <input
             type="text"
             value={nomeBaralho}
             onChange={(e) => setNomeBaralho(e.target.value)}
-            className="w-full bg-transparent text-white text-lg outline-none pb-1"
+            className="w-full bg-transparent text-white text-xl 2xl:text-2xl outline-none pb-1"
           />
         </fieldset>
-
-        <button
-          onClick={handleSalvar}
-          disabled={salvando}
-          className="flex justify-center items-center px-10 py-3 cursor-pointer hover:scale-105 transition-all bg-[#1e2f57] rounded-xl border-2 border-amber-400 text-2xl font-semibold text-white shadow-md disabled:opacity-50"
-        >
-          {salvando ? "Salvando..." : "Salvar"}
-        </button>
+        <Botao
+            texto={salvando ? "Salvando..." : "Salvar"}
+            raio={20}
+            disabled={salvando}
+            borda="border-[4px]"
+            className="loja-hover w-[clamp(200px,14.061vw,270px)] h-[clamp(60px,12.5vh,170px)] flex items-center justify-center text-center text-[clamp(15px,2.240vw,43px)] disabled:opacity-50"
+            onClick={handleSalvar}
+         />
       </div>
-    </div>
+          <Modal
+              aberto={modalAberto}
+              titulo={tituloModal}
+              mensagem={mensagemModal}
+              tipo={tipoModal}
+              onFechar={() => setModalAberto(false)}
+          />
+    </main>
   );
 }
 
