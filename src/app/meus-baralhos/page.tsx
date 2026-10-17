@@ -121,16 +121,21 @@ export default function MeusBaralhosPage() {
 	if (erroServidor) {
 		return (
 			<div className="flex flex-col bg-custom-blue items-center w-full min-h-screen relative justify-center p-4">
-				<button
+				<div className="absolute top-10 left-10 z-10">
+				<Botao
+					texto="Voltar"
+					nomeIcone="voltar"
+					tamanhoIcone={40}
+					corDoTexto="#FFFFFF"
+					corDeFundo="transparent"
+					corDaBorda="transparent"
+					className="px-0 py-0 text-3xl"
 					onClick={() => router.push("/")}
-					className="flex justify-center w-40 h-10 cursor-pointer hover:scale-105 transition-all gap-1.5 text-4xl mt-10 ml-10 absolute left-0 top-0 text-white"
-				>
-					<Back />
-					Voltar
-				</button>
+				/>
+				</div>
 
 				<p className="text-white text-2xl text-center">
-					Não foi possível conectar-se com o servidor
+				Não foi possível conectar-se com o servidor
 				</p>
 			</div>
 		);
@@ -150,13 +155,18 @@ export default function MeusBaralhosPage() {
 
 	return (
 		<main className="flex flex-col bg-custom-blue items-center w-full min-h-screen relative">
-			<button
-				onClick={() => router.push("/")}
-				className="flex justify-center w-40 h-10 cursor-pointer hover:scale-105 transition-all gap-1.5 text-4xl mt-10 ml-10 absolute left-0 top-0 text-white"
-			>
-				<Back />
-				Voltar
-			</button>
+			<div className="absolute top-10 left-10 z-10">
+				<Botao
+					texto="Voltar"
+					nomeIcone="voltar"
+					tamanhoIcone={40}
+					corDoTexto="#FFFFFF"
+					corDeFundo="transparent"
+					corDaBorda="transparent"
+					className="px-0 py-0 text-3xl"
+					onClick={() => router.push("/")}
+				/>
+			</div>
 
 			<div className="flex flex-col mt-[clamp(55px,9.778vh,105.6px)]">
 				<p className="text-[clamp(32px,3vw,56px)] mb-12 text-white">Meus Baralhos</p>
