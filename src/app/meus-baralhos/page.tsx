@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import Back from "@/components/ui/Back/Back";
 import Modal from "@/components/layout/Modal";
 import { Botao } from "@/components/ui/Botao";
 
@@ -34,7 +33,7 @@ export default function MeusBaralhosPage() {
 	const [selecionado, setSelecionado] = useState<number | null>(null);
 	const [erro, setErro] = useState<string>("");
 	const [tituloErro, setTituloErro] = useState<string>("");
-	const [mostrarErro, setMostrarErro] = useState<boolean>(false)
+	const [mostrarErro, setMostrarErro] = useState<boolean>(false);
 	const [carregando, setCarregando] = useState<boolean>(true);
 	const [erroServidor, setErroServidor] = useState<boolean>(false);
 
@@ -149,10 +148,6 @@ export default function MeusBaralhosPage() {
 		);
 	}
 
-	const metade = Math.ceil(baralhos.length / 2);
-	const coluna1 = baralhos.slice(0, metade);
-	const coluna2 = baralhos.slice(metade);
-
 	return (
 		<main className="flex flex-col bg-custom-blue items-center w-full min-h-screen relative">
 			<div className="absolute top-10 left-10 z-10">
@@ -177,45 +172,27 @@ export default function MeusBaralhosPage() {
 					Você ainda não possui nenhum baralho criado.
 				</p>
 			) : (
-				<div className="flex justify-center w-screen overflow-auto gap-30">
-					<div className="flex flex-col justify-start items-center w-[clamp(271.5px,18.854vw,362px)] h-[clamp(150px,42.667vh,460.8px)] overflow-auto">
-						{coluna1.map((baralho) => {
+				<div className="flex justify-center w-screen overflow-auto">
+					<div className="grid grid-cols-2 content-start justify-items-center gap-x-5 gap-y-5 w-[clamp(600px,48vw,1200px)] h-[clamp(150px,42.667vh,460.8px)] overflow-y-auto inventory-scrollbar">
+						{baralhos.map((baralho) => {
 							const estaSelecionado = selecionado === baralho.idBaralho;
-							return (
-								<Botao
-									texto= {baralho.nome}
-									key={baralho.idBaralho}
-									corDaBorda={estaSelecionado ? "#C8911A" : "#686868"}
-									corDeFundo={estaSelecionado ? "#C8911A" : "#21366B"}
-									raio={20}
-									className="cursor-pointer w-[clamp(300px,18.833vw,400px)] h-[clamp(55px,8.889vh,96px)] text-[clamp(32px,2.708vw,52px)] border-5 flex items-center justify-center"
-									onClick={() => {
-										setErro("");
-										setSelecionado(baralho.idBaralho);
-									}}
-								/>
-							);
-						})}
-					</div>
 
-					<div className="flex flex-col justify-start items-center w-[clamp(271.5px,18.854vw,362px)] h-[clamp(150px,42.667vh,460.8px)] overflow-auto">
-						{coluna2.map((baralho) => {
-							const estaSelecionado = selecionado === baralho.idBaralho;
 							return (
 								<Botao
-									texto= {baralho.nome}
+									texto={baralho.nome}
 									key={baralho.idBaralho}
 									corDaBorda={estaSelecionado ? "#C8911A" : "#686868"}
 									corDeFundo={estaSelecionado ? "#C8911A" : "#21366B"}
+									corDoTexto={estaSelecionado ? "black" : "white"}
 									raio={20}
-									className="cursor-pointer w-[clamp(300px,18.833vw,400px)] h-[clamp(55px,8.889vh,96px)] text-[clamp(32px,2.708vw,52px)] border-5 flex items-center justify-center"
+									className="loja-hover w-[clamp(250px,19vw,400px)] h-[clamp(55px,8.889vh,96px)] text-[clamp(32px,2.708vw,52px)] border-5 flex items-center justify-center"
 									onClick={() => {
 										setErro("");
 										setSelecionado(baralho.idBaralho);
 									}}
 								/>
-							);
-						})}
+        					);
+    					})}
 					</div>
 				</div>
 			)}

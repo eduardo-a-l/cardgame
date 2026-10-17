@@ -4,6 +4,7 @@ import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Botao } from "@/components/ui/Botao";
 import { Baralho as CardBaralho } from "@/components/ui/Baralho";
+import Modal from "@/components/layout/Modal";
 
 interface BaralhoData {
   idBaralho: number;
@@ -26,6 +27,8 @@ function SelecionarBaralhoConteudo() {
   const [erro, setErro] = useState<string>("");
   const [carregando, setCarregando] = useState<boolean>(true);
   const [erroServidor, setErroServidor] = useState<boolean>(false);
+	const [tituloErro, setTituloErro] = useState<string>("");
+	const [mostrarErro, setMostrarErro] = useState<boolean>(false)
 
   useEffect(() => {
     if (!usuarioIdAtivo) {
@@ -68,6 +71,8 @@ function SelecionarBaralhoConteudo() {
   function handleContinuar() {
     if (!selecionado) {
       setErro("Selecione um baralho para continuar.");
+      setTituloErro("Baralho não selecionado");
+      setMostrarErro(true)
       return;
     }
 
@@ -111,7 +116,7 @@ function SelecionarBaralhoConteudo() {
   }
 
   return (
-    <main className="relative h-screen bg-[#1B1B2F] overflow-hidden">
+    <main className="relative h-screen bg-[#1B1B2F] overflow-hidden flex flex-col items-center">
       <div className="absolute top-10 left-10 z-10">
         <Botao
           texto="Voltar"
@@ -125,20 +130,16 @@ function SelecionarBaralhoConteudo() {
         />
       </div>
 
-      <h1 className="pt-20 text-center text-4xl text-white">
+      <h1 className="text-[clamp(36px,3.125vw,60px)] mt-10 tall:mt-30 text-center">
         Selecione seu Baralho, {nomeUsuario || "Jogador"}
       </h1>
 
-      {erro && (
-        <p className="text-red-400 text-center text-xl mt-4">{erro}</p>
-      )}
-
       {baralhos.length === 0 ? (
-        <p className="text-white text-center text-xl mt-10">
+        <p className="text-white text-center text-xl mt-10 mb-40">
           Nenhum baralho encontrado para este usuário.
         </p>
       ) : (
-        <div className="w-[50%] max-h-[60vh] overflow-y-auto inventory-scrollbar grid grid-cols-3 gap-6 justify-items-center mx-auto mt-10 p-2">
+        <div className="w-[50%] h-[48vh] overflow-y-auto inventory-scrollbar grid grid-cols-2 gap-16 justify-items-center mx-auto mt-16 p-2 pl-3 pr-3">
           {baralhos.map((baralho) => {
             const selecionadoAtual = selecionado === baralho.idBaralho;
 
@@ -146,6 +147,7 @@ function SelecionarBaralhoConteudo() {
               <CardBaralho
                 key={baralho.idBaralho}
                 texto={baralho.nome}
+                raio={23}
                 onClick={() => {
                   setErro("");
                   setSelecionado(baralho.idBaralho);
@@ -153,20 +155,28 @@ function SelecionarBaralhoConteudo() {
                 corDeFundo={selecionadoAtual ? "#C8911A" : "#21366B"}
                 corDaBorda={selecionadoAtual ? "#C8911A" : "#686868"}
                 corDoTexto={selecionadoAtual ? "#000000" : "#FFFFFF"}
-                className="w-full text-center"
+                className={`w-full h-[92px] text-center loja-hover ${!selecionadoAtual ? "[-webkit-text-stroke:0.6px_#686868]" : ""}`}
               />
             );
           })}
         </div>
       )}
 
-      <div className="flex justify-center">
+      <div className="flex justify-center mt-[5vh] tall:mt-[9vh]">
         <Botao
           texto="Continuar"
-          className="absolute bottom-15 w-50 cursor-pointer h-14 text-3xl place-content-center bg-blue-900 rounded-md border-3 border-amber-400 hover:scale-105 transition-all"
+          raio={23}
+          className="cursor-pointer w-[clamp(300px,20.833vw,400px)] h-[100px] text-[clamp(32px,2.708vw,52px)] rounded-md border-5 hover:scale-105 transition-all flex items-center justify-center"
           onClick={handleContinuar}
         />
       </div>
+			<Modal
+                aberto={mostrarErro}
+                titulo={tituloErro}
+                mensagem={erro}
+                tipo={"erro"}
+                onFechar={() => setMostrarErro(false)}
+            />
     </main>
   );
 }
