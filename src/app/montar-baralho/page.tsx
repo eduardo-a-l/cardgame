@@ -323,11 +323,6 @@ function MontarBaralhoConteudo() {
           onClick={() => router.push("/meus-baralhos")}
         />
       </div>
-        <div className="w-8 h-8 flex items-center justify-center">
-          <Back />
-        </div>
-        <span>Voltar</span>
-      </button>
 
       <div className="flex flex-col items-center mt-[clamp(30px,5.889vh,96px)] tall:mt-[clamp(55px,8.889vh,96px)]">
         <h1 className="text-[clamp(32px,2.708vw,52px)] font-bold tracking-wide">
