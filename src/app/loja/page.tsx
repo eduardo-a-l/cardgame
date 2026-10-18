@@ -269,7 +269,7 @@ export default function TelaLoja() {
                                 <div 
                                     key={item.idLojaItem}
                                     onClick={() => { setIndexSelecionado(index); }}
-                                    className="loja-hover w-full max-w-[209px] aspect-[209/301.4] border-[5px] border-[#686868] rounded-[33px] shadow-sm flex flex-col items-center justify-center"
+                                    className="loja-hover w-full max-w-[209px] aspect-[190/274] border-[5px] border-[#686868] rounded-[33px] shadow-sm flex flex-col items-center justify-center"
                                     style={{ backgroundColor: corTipo(item.carta_tipo) }}
                                 >
                                     <p className="text-[clamp(24px,1.5vw,29px)] text-center ">{item.carta_nome}</p>
@@ -298,7 +298,7 @@ export default function TelaLoja() {
                                              borderColor: corTipo(item.raridade)
                                      }}
                                     onClick={() => { setIndexSelecionado(index);}}
-                                    className="loja-hover w-full max-w-[209px] aspect-[209/301.4] border-[5px] rounded-[33px] shadow-sm flex flex-col items-center justify-center text-white text-[38px] text-center"
+                                    className="loja-hover w-full max-w-[209px] aspect-[190/274] border-[5px] rounded-[33px] shadow-sm flex flex-col items-center justify-center text-white text-[38px] text-center"
                                 >
                                     <p className="text-[clamp(24px,1.5vw,29px)] text-center">{item.raridade}</p>
                                     <p className="text_dinheiro text-[clamp(24px,1.5vw,29px)] text-center ">{ item.preco }G</p>
