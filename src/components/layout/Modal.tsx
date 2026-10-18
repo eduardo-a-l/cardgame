@@ -18,6 +18,8 @@ interface ModalProps {
     cartas?: CartaModal[];
     pacote?: Pacote;
     onFechar: () => void;
+    onConfirmar?: () => void;
+    mostrarConfirmacao?: boolean;
 }
 
 export default function Modal({
@@ -28,6 +30,8 @@ export default function Modal({
     cartas = [],
     pacote,
     onFechar,
+    onConfirmar,
+    mostrarConfirmacao = false
 }: ModalProps) {
 
     useEffect(() => {
@@ -168,10 +172,10 @@ export default function Modal({
 
                 <button
                     type="button"
-                    onClick={onFechar}
+                    onClick={mostrarConfirmacao ? onConfirmar : onFechar}
                     className="mx-auto mt-10 min-w-48 rounded-xl border-2 border-[#C8911A] bg-[#21366B] px-10 py-4 font-semibold text-white transition hover:bg-[#2D4785] active:scale-95"
                 >
-                    {tipo === "pacote" ? "Continuar" : "Entendi"}
+                    {tipo === "pacote" ? "Continuar" : mostrarConfirmacao ? "Confirmar" : "Entendi"}
                 </button>
             </div>
         </div>
