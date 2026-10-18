@@ -2,7 +2,6 @@
 
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import Back from "@/components/ui/Back/Back";
 import Modal from "@/components/layout/Modal";
 import { Botao } from "@/components/ui/Botao";
 
@@ -66,6 +65,7 @@ function MontarBaralhoConteudo() {
   const [tituloModal, setTituloModal] = useState("");
   const [mensagemModal, setMensagemModal] = useState("");
   const [tipoModal, setTipoModal] = useState< "erro" | "sucesso" | "pacote" | "detalhesPacote" >("erro");
+  const [onFechar, setOnFechar] = useState<(() => void) | undefined>();
 
   useEffect(() => {
     async function carregarDados() {
@@ -247,8 +247,12 @@ function MontarBaralhoConteudo() {
       if (!respUpdate.ok) {
         throw new Error("Erro ao salvar cartas do baralho");
       }
+      setMensagemModal(`O baralho ${nomeBaralho} foi criado com sucesso!`);
+      setTituloModal("Criado!")
+      setTipoModal("sucesso")
+      setModalAberto(true)
+      setOnFechar(() => () => { router.push("/meus-baralhos"); } );
 
-      router.push("/meus-baralhos");
     } catch (err) {
       console.error(err);
       setMensagemModal("Não foi possível salvar o baralho.");
@@ -262,7 +266,7 @@ function MontarBaralhoConteudo() {
 
   function getEstiloCarta(tipo: string) {
     const cardBase =
-      "w-[clamp(101.25px,7.031vw,135px)] aspect-[209/301.4] rounded-[1vw] flex flex-col items-center justify-center p-1 text-center select-none border-[3px] border-[#686868] loja-hover";
+      "w-[clamp(101.25px,7.031vw,135px)] aspect-[190/274] rounded-[1vw] flex flex-col items-center justify-center p-1 text-center select-none border-[3px] border-[#686868] loja-hover";
 
     if (tipo === "Campo") {
       return `${cardBase} bg-[#216B35]`;
@@ -273,6 +277,11 @@ function MontarBaralhoConteudo() {
     }
 
       return `${cardBase} bg-[#21366B]`;
+  }
+
+  function acaoAoFechar() {
+    setModalAberto(false)
+    if (onFechar) onFechar()
   }
 
   if (erroServidor) {
@@ -306,11 +315,12 @@ function MontarBaralhoConteudo() {
     );
   }
 
-  const idsUsadosNoBaralho = baralhoAtual.map((c) => c.idInventario);
+  const idsInventarioUsadosNoBaralho = baralhoAtual.map((c) => c.idInventario);
+  const idsCartaUsadosNoBaralho = baralhoAtual.map((c) => c.idCarta);
   const slotsVazios = Math.max(0, 20 - baralhoAtual.length);
 
   return (
-    <main className="flex flex-col bg-custom-blue items-center w-full min-h-screen relative text-white pl-6 pr-6">
+    <main className="flex flex-col bg-custom-blue items-center w-full min-h-screen inventory-scrollbar relative text-white pl-6 pr-6">
       <div className="absolute top-10 left-10 z-10">
         <Botao
           texto="Voltar"
@@ -361,9 +371,10 @@ function MontarBaralhoConteudo() {
 
           <div className="grid grid-cols-5 gap-3 p-3 max-h-[46vh] overflow-y-auto inventory-scrollbar">
             {inventario.map((carta) => {
-              const jaEstaNoBaralho = idsUsadosNoBaralho.filter(id => id === carta.idInventario).length >= 2;
+              const jaEstaNoBaralho = idsInventarioUsadosNoBaralho.includes(carta.idInventario);
+              const passouDoLimite = idsCartaUsadosNoBaralho.filter(id => id === carta.idCarta).length >= 2;
 
-              if (jaEstaNoBaralho) {
+              if (jaEstaNoBaralho || passouDoLimite) {
                 return (
                   <div
                     key={carta.idInventario}
@@ -388,7 +399,7 @@ function MontarBaralhoConteudo() {
         </div>
       </div>
 
-      <div className="flex flex-col sm:flex-row items-center justify-between w-full max-w-5xl px-8 pt-10 gap-26">
+      <div className="flex flex-col sm:flex-row items-center justify-between w-full max-w-7xl px-8 pt-10 gap-26">
         <fieldset className="border border-gray-400 rounded-md px-4 py-1.5 w-full">
           <legend className="text-sm text-gray-300 px-1.5 ml-2">
             Nome do Baralho
@@ -404,8 +415,8 @@ function MontarBaralhoConteudo() {
             texto={salvando ? "Salvando..." : "Salvar"}
             raio={20}
             disabled={salvando}
-            borda="border-[4px]"
-            className="loja-hover w-[clamp(200px,14.061vw,270px)] h-[clamp(60px,12.5vh,170px)] flex items-center justify-center text-center text-[clamp(15px,2.240vw,43px)] disabled:opacity-50"
+            borda="border-[6px]"
+            className="shrink-0 loja-hover w-[clamp(200px,15.061vw,290px)] h-[clamp(40px,13.5vh,150px)] flex items-center justify-center text-center text-[clamp(15px,3vw,58px)] disabled:opacity-50"
             onClick={handleSalvar}
          />
       </div>
@@ -414,7 +425,7 @@ function MontarBaralhoConteudo() {
               titulo={tituloModal}
               mensagem={mensagemModal}
               tipo={tipoModal}
-              onFechar={() => setModalAberto(false)}
+              onFechar={acaoAoFechar}
           />
     </main>
   );

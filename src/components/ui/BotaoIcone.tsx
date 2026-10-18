@@ -1,4 +1,4 @@
-import { Children, ComponentProps } from "react";
+import { ComponentProps } from "react";
 import { Icone, NomeIcone } from "./Icone";
 
 interface BotaoIconeProps extends ComponentProps<"button"> {

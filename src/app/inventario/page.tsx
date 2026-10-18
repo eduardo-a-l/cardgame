@@ -117,27 +117,33 @@ export default function TelaInventario() {
                 <div className="w-[154.03px] h-4"></div>
             </div>
 
-            <div className="h-[75vh] w-[95vw] md:w-[90vw] xl:w-[85vw] mt-12 overflow-y-auto inventory-scrollbar">
+            <div className="h-[75vh] w-[95vw] xl:w-[90vw] 2xl:w-[86vw] mt-9 pt-3 pl-2 pr-2 overflow-y-auto inventory-scrollbar">
                 <div className="grid grid-cols-5 gap-[3vw] justify-items-center">
 
                     {cartas.map((carta) => {
                         const estaEmBaralho = Boolean(carta.emBaralho);
-
                         return (
                             <div
                                 key={carta.idInventario}
                                 onClick={() => router.push(`/carta/${carta.idInventario}/descricao?origem=inventario`)}
-                                className={`w-full max-w-[209px] aspect-[209/301.4] ${carta.tipo == "Personagem" ? "bg-[#21366B]" : carta.tipo == "Suporte" ? "bg-[#53216B]" : "bg-[#216B35]"} border-[5px] border-[#686868] rounded-[33px] shadow-sm flex items-center justify-center text-white text-[38px] text-center cursor-pointer transition-transform hover:scale-105`}
+                                className={`relative w-full max-w-[209px] aspect-[190/274] ${carta.tipo == "Personagem" ? "bg-[#21366B]" : carta.tipo == "Suporte" ? "bg-[#53216B]" : "bg-[#216B35]"} border-[5px] border-[#686868] rounded-[33px] shadow-sm flex items-center justify-center text-white text-[21px] kinda-small:text-[30px] pretty-wide:text-[38px] text-center cursor-pointer transition-transform hover:scale-105`}
                             >
                                 {estaEmBaralho && (
                                     <span className="absolute top-3 right-3 bg-[#C8911A] text-black text-[10px] font-bold px-2 py-1 rounded-full shadow-md border border-black pointer-events-none">
                                         Em Baralho
                                     </span>
                                 )}
-
-                                <span className="p-2 break-words">
-                                    {carta.nome}
-                                </span>
+                                { carta.nome != "Researcher's Help" 
+                                ?
+                                    <span className="p-2 break-words">
+                                        {carta.nome}
+                                    </span>
+                                : 
+                                    <div className="flex flex-col">
+                                        <span className="text-[16px] kinda-small:text-[23px] pretty-wide:text-[30px] p-2">Researcher&#39;s</span>
+                                        <span className="text-[21px] kinda-small:text-[30px] pretty-wide:text-[38px] p-2">Help</span>
+                                    </div>
+                                }
                             </div>
                         );
                     })}

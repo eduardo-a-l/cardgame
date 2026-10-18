@@ -31,11 +31,14 @@ export default function MeusBaralhosPage() {
 
 	const [baralhos, setBaralhos] = useState<Baralho[]>([]);
 	const [selecionado, setSelecionado] = useState<number | null>(null);
-	const [erro, setErro] = useState<string>("");
-	const [tituloErro, setTituloErro] = useState<string>("");
-	const [mostrarErro, setMostrarErro] = useState<boolean>(false);
+	const [mensagemModal, setMensagemModal] = useState<string>("");
+	const [tituloModal, setTituloModal] = useState<string>("");
+	const [modalAberto, setModalAberto] = useState<boolean>(false);
 	const [carregando, setCarregando] = useState<boolean>(true);
 	const [erroServidor, setErroServidor] = useState<boolean>(false);
+	type TipoModal = "detalhesPacote" | "erro" | "pacote" | "sucesso";
+	const [tipoModal, setTipoModal] = useState<TipoModal>("erro");
+	const [acaoAoConfirmar, setAcaoAoConfirmar] = useState<(() => void | Promise<void>) | null>(null);
 
 	useEffect(() => {
 		async function carregarBaralhos() {
@@ -72,45 +75,52 @@ export default function MeusBaralhosPage() {
 
 	async function handleExcluir() {
 		if (!selecionado) {
-			setErro("Selecione um baralho para excluir.");
-			setTituloErro("Erro na exclusão")
-			setMostrarErro(true);
-			
+			setMensagemModal("Selecione um baralho para excluir.");
+			setTituloModal("Erro na exclusão")
+			setModalAberto(true);
+			setTipoModal("erro")
 			return;
 		}
 
-		const confirmar = window.confirm("Deseja realmente excluir este baralho?");
-		if (!confirmar) return;
+		setTituloModal("Excluir baralho");
+		setMensagemModal("Deseja realmente excluir este baralho?");
+		setTipoModal("erro");
+		setAcaoAoConfirmar(() => async () => {
+			setModalAberto(false)
+			setAcaoAoConfirmar(null)
+			setMensagemModal("");
 
-		setErro("");
+			try {
+				const response = await fetch(
+					`http://localhost:8081/Baralhos/${selecionado}`,
+					{
+						method: "DELETE",
+					}
+				);
 
-		try {
-			const response = await fetch(
-				`http://localhost:8081/Baralhos/${selecionado}`,
-				{
-					method: "DELETE",
+				if (!response.ok) {
+					throw new Error("Erro ao excluir o baralho");
 				}
-			);
 
-			if (!response.ok) {
-				throw new Error("Erro ao excluir o baralho");
+				setBaralhos((prev) => prev.filter((b) => b.idBaralho !== selecionado));
+				setSelecionado(null);
+			} catch (err) {
+				console.error(err);
+				setMensagemModal("Não foi possível excluir o baralho.");
+				setTituloModal("Erro na exclusão")
+				setModalAberto(true);
+				setTipoModal("erro")
 			}
-
-			setBaralhos((prev) => prev.filter((b) => b.idBaralho !== selecionado));
-			setSelecionado(null);
-		} catch (err) {
-			console.error(err);
-			setErro("Não foi possível excluir o baralho.");
-			setTituloErro("Erro na exclusão")
-			setMostrarErro(true);
-		}
+		});
+		setModalAberto(true);
 	}
 
 	function handleEditar() {
 		if (!selecionado) {
-			setErro("Selecione um baralho para editar.");
-			setTituloErro("Erro na edição")
-			setMostrarErro(true);
+			setMensagemModal("Selecione um baralho para editar.");
+			setTituloModal("Erro na edição")
+			setModalAberto(true);
+			setTipoModal("erro")
 			return;
 		}
 
@@ -187,7 +197,7 @@ export default function MeusBaralhosPage() {
 									raio={20}
 									className="loja-hover w-[clamp(250px,19vw,400px)] h-[clamp(55px,8.889vh,96px)] text-[clamp(32px,2.708vw,52px)] border-5 flex items-center justify-center"
 									onClick={() => {
-										setErro("");
+										setMensagemModal("");
 										setSelecionado(baralho.idBaralho);
 									}}
 								/>
@@ -221,11 +231,13 @@ export default function MeusBaralhosPage() {
               onClick={ () => router.push("/montar-baralho") }
             />
 			<Modal
-                aberto={mostrarErro}
-                titulo={tituloErro}
-                mensagem={erro}
-                tipo={"erro"}
-                onFechar={() => setMostrarErro(false)}
+                aberto={modalAberto}
+                titulo={tituloModal}
+                mensagem={mensagemModal}
+                tipo={tipoModal}
+				onFechar={() => { setModalAberto(false); setAcaoAoConfirmar(null); }}
+				onConfirmar={() => acaoAoConfirmar?.()}
+				mostrarConfirmacao={acaoAoConfirmar != null}
             />
 		</main>
 	);
