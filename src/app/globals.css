@@ -160,3 +160,5 @@ h2, h1, p {
 
 @custom-variant medium (@media (min-height: 768px));
 @custom-variant tall (@media (min-height: 900px));
+@custom-variant pretty-wide (@media (min-width: 1180px));
+@custom-variant kinda-small (@media (min-height: 970px));
