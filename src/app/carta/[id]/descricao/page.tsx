@@ -2,10 +2,9 @@
 
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { Botao } from "@/components/ui/Botao";
-import DescricaoCarta from "@/components/ui/DescricaoCarta/DescricaoCarta";
-import CardCarta from "@/components/ui/CardCarta/CardCarta";
 import Modal from "@/components/layout/Modal";
 import { useEffect, useState, Suspense } from "react";
+import { corTipo } from "@/app/loja/page";
 
 interface ItemInventario {
     idInventario?: number;
@@ -167,7 +166,7 @@ function DescricaoConteudo() {
     const nomeCarta = carta?.nome ?? carta?.Nome ?? "Carta";
 
     return (
-        <div className="flex flex-col bg-custom-blue items-center w-full min-h-screen relative overflow-x-hidden p-4 sm:p-6 md:p-8">
+        <main className="relative flex flex-col bg-custom-blue items-center w-full h-screen">
             <div className="absolute top-10 left-10 z-10">
                 <Botao
                     texto="Voltar"
@@ -182,33 +181,63 @@ function DescricaoConteudo() {
             </div>
 
             <div className="flex flex-col mt-[clamp(2.5rem,6vh,4rem)] mb-[clamp(1rem,3vh,2rem)] text-center">
-                <h1 className="text-[clamp(1.75rem,3.8vmin,2.75rem)] font-bold text-white">
+                <h1 className="text-[clamp(1rem,3.5vw,4.2rem)]">
                     Detalhes: {carregando ? "Carregando..." : nomeCarta}
                 </h1>
             </div>
 
             {!carregando && idCartaParaComponentes && (
-                <div className="flex flex-col md:flex-row items-center md:items-stretch justify-center gap-[clamp(1.5rem,3vw,3rem)] w-full max-w-5xl mx-auto text-[clamp(1rem,1.8vmin,1.35rem)]">
-                    <CardCarta id={String(idCartaParaComponentes)} />
-                    <div className="flex flex-col w-full md:w-[clamp(20rem,35vw,30rem)] max-w-full h-[clamp(320px,46vh,440px)] overflow-y-auto p-[clamp(1rem,2vw,1.5rem)]">
-                        <DescricaoCarta className="flex flex-col text-[clamp(1.25rem,1.8vmax,1.30rem)]" id={String(idCartaParaComponentes)} />
+                <div className="flex flex-col md:flex-row items-start gap-[clamp(1.5rem,6vw,7.2rem)] w-[70vw] h-[63vh] ml-[7.4vw] mx-auto text-[clamp(1rem,3.5vw,4.2rem)] mt-8">
+
+                    <div className="flex flex-col pb-1 mt-2 justify-end items-center bg-[#21366B] rounded-[30px] border-[5px] border-[#686868] w-[clamp(15rem,22vw,27rem)] aspect-[190/274] shrink-0 shadow-xl">
+                        
+                        <p className="text-[clamp(1rem,2.8vw,4.2rem)] text-center px-3 leading-[1.3]">{nomeCarta}</p>
+
+                        {carta?.vida !== null && carta?.vida !== undefined && (
+                            <p className="text-[clamp(1rem,2.3vw,4.2rem)]">HP: {carta?.vida}</p>
+                        )}
+
                     </div>
+
+                    <div className="flex flex-col h-full self-start w-full pr-5 overflow-y-auto inventory-scrollbar text-[clamp(1rem,2.3vw,4.2rem)]">
+
+                        <p className="leading-[1.3]">Tipo: {carta?.tipo}</p>
+
+                        <p className="leading-[1.3]">
+                            <span>Raridade: </span>
+                            <span style={{ color: corTipo(carta?.raridade as string) }}>{carta?.raridade}</span>
+                        </p>
+
+                        <p className="text_dinheiro mb-10 leading-[1.3]">Preço: {carta?.precoPadrao}G</p>
+                    
+                        <p className="text_dinheiro leading-[1.3]">
+                            {carta?.tipo == "Personagem" ? "[Ação 1]" : "[Efeito]"}
+                        </p>
+
+                        <p className="leading-[1.3]">{carta?.acao1}</p>
+
+                        {carta?.acao2 && <> <p className="text_dinheiro leading-[1.3]">[Ação 2]</p> <p className="leading-[1.3]">{carta.acao2}</p> </>}
+                    </div>
+
                 </div>
             )}
 
             {origem === "inventario" && !carregando && (
-                <div className="flex justify-center md:justify-end w-full max-w-5xl mx-auto mt-[clamp(1rem,2.5vh,1.75rem)]">
-                    <button 
-                        onClick={handleVender}
-                        disabled={vendendo}
-                        className="flex flex-col items-center justify-center w-[clamp(9rem,13vw,13rem)] h-[clamp(4.25rem,7.5vh,5rem)] cursor-pointer hover:scale-105 transition-all bg-blue-950 rounded-xl border-3 border-amber-500 py-1 shadow-lg disabled:opacity-50"
-                    >
-                        <p className="text-[clamp(1.35rem,2.4vmin,1.75rem)] font-bold text-white">
-                            {vendendo ? "Vendendo..." : "Vender"}
-                        </p>
-                        <p className="text-[clamp(0.85rem,1.5vmin,1.05rem)] text-green-400 font-semibold">+50%G</p>
-                    </button>
-                </div>
+                <button
+                    style={{
+                        backgroundColor: "#21366B",
+                        borderColor: "#C8911A",
+                        borderRadius: "23px"
+                    }}
+                    onClick={handleVender}
+                    disabled={vendendo}
+                    className="absolute bottom-10 right-[56px] flex flex-col items-center justify-end text-center text-[clamp(15px,2.35vw,45px)] border-[6px] loja-hover w-[clamp(200px,17.3vw,400px)] h-[clamp(60px,14.5vh,170px)] disabled:opacity-50"
+                >
+                    <p className="leading-[1.2] text-[clamp(15px,2.95vw,57px)]">
+                        {vendendo ? "Vendendo..." : "Vender"}
+                    </p>
+                    <p className="leading-[1.1] mb-[5px]" style={{ color: "#56BF72" }}>+50%G</p>
+                </button>
             )}
 
             <Modal
@@ -218,7 +247,7 @@ function DescricaoConteudo() {
                 tipo={modal.tipo}
                 onFechar={fecharModal}
             />
-        </div>
+        </main>
     );
 }
 
