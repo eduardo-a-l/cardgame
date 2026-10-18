@@ -122,7 +122,6 @@ export default function TelaInventario() {
 
                     {cartas.map((carta) => {
                         const estaEmBaralho = Boolean(carta.emBaralho);
-//190/274
                         return (
                             <div
                                 key={carta.idInventario}
@@ -141,7 +140,7 @@ export default function TelaInventario() {
                                     </span>
                                 : 
                                     <div className="flex flex-col">
-                                        <span className="text-[16px] kinda-small:text-[23px] pretty-wide:text-[30px] p-2">Researcher's</span>
+                                        <span className="text-[16px] kinda-small:text-[23px] pretty-wide:text-[30px] p-2">Researcher&#39;s</span>
                                         <span className="text-[21px] kinda-small:text-[30px] pretty-wide:text-[38px] p-2">Help</span>
                                     </div>
                                 }

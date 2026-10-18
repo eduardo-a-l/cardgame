@@ -2,7 +2,6 @@
 
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import Back from "@/components/ui/Back/Back";
 import Modal from "@/components/layout/Modal";
 import { Botao } from "@/components/ui/Botao";
 
