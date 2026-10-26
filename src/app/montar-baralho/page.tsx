@@ -187,9 +187,21 @@ function MontarBaralhoConteudo() {
   async function handleSalvar() {
     if (!nomeBaralho.trim()) {
       setMensagemModal("Escolha um nome para o seu baralho.");
-      setTituloModal("Nome vazio!")
-      setTipoModal("erro")
-      setModalAberto(true)
+      setTituloModal("Nome vazio!");
+      setTipoModal("erro");
+      setModalAberto(true);
+      return;
+    }
+
+    const temPersonagem = baralhoAtual.some(
+      (carta) => carta.tipo?.toLowerCase() === "personagem"
+    );
+
+    if (!temPersonagem) {
+      setMensagemModal("O baralho deve conter pelo menos uma carta do tipo Personagem.");
+      setTituloModal("Sem Personagem!");
+      setTipoModal("erro");
+      setModalAberto(true);
       return;
     }
 
@@ -247,18 +259,18 @@ function MontarBaralhoConteudo() {
       if (!respUpdate.ok) {
         throw new Error("Erro ao salvar cartas do baralho");
       }
-      setMensagemModal(`O baralho ${nomeBaralho} foi criado com sucesso!`);
-      setTituloModal("Criado!")
-      setTipoModal("sucesso")
-      setModalAberto(true)
-      setOnFechar(() => () => { router.push("/meus-baralhos"); } );
+      setMensagemModal(`O baralho ${nomeBaralho} foi salvo com sucesso!`);
+      setTituloModal("Criado!");
+      setTipoModal("sucesso");
+      setModalAberto(true);
+      setOnFechar(() => () => { router.push("/meus-baralhos"); });
 
     } catch (err) {
       console.error(err);
       setMensagemModal("Não foi possível salvar o baralho.");
-      setTituloModal("Erro ao salvar!")
-      setTipoModal("erro")
-      setModalAberto(true)
+      setTituloModal("Erro ao salvar!");
+      setTipoModal("erro");
+      setModalAberto(true);
     } finally {
       setSalvando(false);
     }
