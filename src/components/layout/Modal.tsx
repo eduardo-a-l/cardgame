@@ -8,15 +8,20 @@ export interface CartaModal {
     idCarta: number;
     nome: string;
     raridade: string;
+    tipo?: string;
+    vida?: number;
+    acao1?: string;
+    acao2?: string;
 }
 
 interface ModalProps {
     aberto: boolean;
     titulo: string;
     mensagem?: string;
-    tipo: "erro" | "sucesso" | "pacote" | "detalhesPacote";
+    tipo: "erro" | "sucesso" | "pacote" | "detalhesPacote" | "carta";
     cartas?: CartaModal[];
     pacote?: Pacote;
+    carta?: CartaModal;
     onFechar: () => void;
     onConfirmar?: () => void;
     mostrarConfirmacao?: boolean;
@@ -29,6 +34,7 @@ export default function Modal({
     tipo,
     cartas = [],
     pacote,
+    carta,
     onFechar,
     onConfirmar,
     mostrarConfirmacao = false
@@ -170,12 +176,36 @@ export default function Modal({
                     </div>
                 )}
 
+                {tipo === "carta" && carta && (
+
+                    <div className="space-y-3 text-center text-[clamp(18px,1.5vw,29px)]">
+
+                        <p>Tipo: {carta.tipo}</p>
+                        <p>Raridade: {carta.raridade}</p>
+
+                        {carta.vida !== undefined && (
+                            <p>Vida: {carta.vida}</p>
+                        )}
+
+                        {carta.acao1 && (
+                            <p>{carta.tipo == "Personagem" ? "Ação 1" : "Efeito"}: {carta.acao1}</p>
+                        )}
+
+                        {carta.acao2 && (
+                            <p>Ação 2: {carta.acao2}</p>
+                        )}
+
+                    </div>
+                )}
+
                 <button
                     type="button"
                     onClick={mostrarConfirmacao ? onConfirmar : onFechar}
                     className="mx-auto mt-10 min-w-48 rounded-xl border-2 border-[#C8911A] bg-[#21366B] px-10 py-4 font-semibold text-white transition hover:bg-[#2D4785] active:scale-95"
                 >
-                    {tipo === "pacote" ? "Continuar" : mostrarConfirmacao ? "Confirmar" : "Entendi"}
+                    {tipo === "pacote"  ? "Continuar"  : 
+                     tipo === "carta"   ? "Usar Carta" :
+                     mostrarConfirmacao ? "Confirmar"  : "Entendi"}
                 </button>
             </div>
         </div>
