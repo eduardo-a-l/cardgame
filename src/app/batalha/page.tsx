@@ -24,6 +24,22 @@ interface UsuarioAPI {
     nomeUsuario: string;
 }
 
+interface StatusProps {
+    texto: string;
+    cor: string;
+}
+
+function StatusIcon({ texto, cor }: StatusProps) {
+    return (
+        <span
+            className="shrink-0 rounded-lg px-3 py-1 text-[clamp(11px,0.8vw,16px)] font-bold text-white"
+            style={{ backgroundColor: cor }}
+        >
+            {texto}
+        </span>
+    );
+}
+
 function criarJogador(
     idUsuario: number,
     nome: string
@@ -1588,6 +1604,73 @@ export default function TelaBatalha() {
         }
     }
 
+    function obterEfeitos(jogador: EstadoJogador) {
+        const efeitos: { texto: string; cor: string }[] = [];
+
+        if (jogador.buffDano.valor > 0) {
+            efeitos.push({
+                texto: `ATK +${jogador.buffDano.valor} (${jogador.buffDano.duracao})`,
+                cor: "#FF4500"
+            });
+        }
+
+        if (jogador.buffDefesa.valor > 0) {
+            efeitos.push({
+                texto: `DEF +${jogador.buffDefesa.valor} (${jogador.buffDefesa.duracao})`,
+                cor: "#1E90FF"
+            });
+        }
+
+        if (jogador.turnosSemAcao > 0) {
+            efeitos.push({
+                texto: `STUN (${jogador.turnosSemAcao})`,
+                cor: "#808000"
+            });
+        }
+
+        if (jogador.refletirDano) {
+            efeitos.push({
+                texto: "REFLEXÃO",
+                cor: "#9932CC"
+            });
+        }
+
+        if (jogador.duracaoFocusLens > 0) {
+            efeitos.push({
+                texto: `FOCUS (${jogador.duracaoFocusLens})`,
+                cor: "#228B22"
+            });
+        }
+
+        if (jogador.duracaoSmokescreen > 0) {
+            efeitos.push({
+                texto: `SMOKE (${jogador.duracaoSmokescreen})`,
+                cor: "#696969"
+            });
+        }
+
+        if (jogador.itensAtivos.sharpClaws) {
+            efeitos.push({ texto: "SHARP CLAWS", cor: "#B8860B" });
+        }
+
+        if (jogador.itensAtivos.rigidShell) {
+            efeitos.push({ texto: "RIGID SHELL", cor: "#4682B4" });
+        }
+
+        if (jogador.itensAtivos.lifeDrainingFlower) {
+            efeitos.push({ texto: "LIFE FLOWER", cor: "#8B008B" });
+        }
+
+        if (jogador.itensAtivos.devouringOrb) {
+            efeitos.push({
+                texto: `ORB (${jogador.hpColetadoOrb}/75)`,
+                cor: "#4B0082"
+            });
+        }
+
+        return efeitos;
+    }
+
     function exibirCarta(borda: string, largura: string[], 
                          altura: string, nomeImagem: string, 
                          texto: string, tamanhoTexto: string,
@@ -1674,7 +1757,7 @@ export default function TelaBatalha() {
                 </div>
 
                 {/*Campo de Batalha */}
-                <div className="flex items-center h-[53vh]">
+                <div className="relative flex items-center h-[53vh]">
                     {/*Carta Jogador*/}
                     <div className="flex items-center justify-center w-[50%] h-full bg-[#363C4B]  gap-[20px]">
                         
@@ -1683,13 +1766,41 @@ export default function TelaBatalha() {
                             {exibirCarta("border-[#C8911A]", ["w-[clamp(180px,13.0208vw,250px)]", ""], "h-[clamp(240px,31.4815vh,340px)]", "", jogadorDaVez.personagemAtivo?.nome ?? "Selecione um personagem", jogadorDaVez.personagemAtivo ? "text-[40px]" : "text-[25px]", "rounded-[15px]", "bg-[#21366B]", jogadorDaVez.personagemAtivo !== null, true, jogadorDaVez.personagemAtivo ? () => abrirModalCarta(jogadorDaVez.personagemAtivo!, false) : undefined)}
                         </div>
 
-                        <div className="flex flex-col justify-start gap-[10px] h-[clamp(240px,31.4815vh,340px)] mt-[50px]">
+                        <div className="flex flex-col justify-start gap-[10px] h-[clamp(240px,31.4815vh,340px)] mt-[50px] min-w-0">
 
                             <h1 className="text-[30px]">Vida: {jogadorDaVez.personagemAtivo ? jogadorDaVez.hpAtivo : "--"}</h1>
+
+                            <div className="flex flex-col gap-2 max-h-[150px] overflow-y-auto inventory-scrollbar pr-2">
+                                {obterEfeitos(jogadorDaVez).map((efeito, indice) => (
+                                    <StatusIcon
+                                        key={`${efeito.texto}-${indice}`}
+                                        texto={efeito.texto}
+                                        cor={efeito.cor}
+                                    />
+                                ))}
+                            </div>
 
                         </div>
 
                     </div>
+
+                    {campoAtivo && (
+                        <div className="absolute bottom-[1vh] left-1/2 z-10 -translate-x-1/2">
+                            {exibirCarta(
+                                "border-[#C8911A]",
+                                ["w-[clamp(85px,6.25vw,120px)]", ""],
+                                "h-[clamp(110px,14vh,150px)]",
+                                "",
+                                campoAtivo.nome ?? "Campo",
+                                "text-[clamp(11px,0.9vw,17px)]",
+                                "rounded-[12px]",
+                                "bg-[#216B35]",
+                                true,
+                                true,
+                                () => abrirModalCarta(campoAtivo, false)
+                            )}
+                        </div>
+                    )}
                     
                     {/*Carta Oponente*/}
                     <div className="flex items-center justify-center w-[50%] h-full bg-[#363C4B] gap-[20px]">
@@ -1701,9 +1812,19 @@ export default function TelaBatalha() {
                             {exibirCarta("border-[#C8911A]", ["w-[clamp(180px,13.0208vw,250px)]", ""], "h-[clamp(240px,31.4815vh,340px)]", "", oponente.personagemAtivo?.nome ?? "Ainda não escolhido", oponente.personagemAtivo ? "text-[40px]" : "text-[25px]", "rounded-[15px]", "bg-[#21366B]", oponente.personagemAtivo !== null, true, oponente.personagemAtivo ? () => abrirModalCarta(oponente.personagemAtivo!, false) : undefined)}
                         </div>
 
-                        <div className="flex flex-col justify-start gap-[10px] h-[clamp(240px,31.4815vh,340px)] mt-[50px]">
+                        <div className="flex flex-col justify-start gap-[10px] h-[clamp(240px,31.4815vh,340px)] mt-[50px] min-w-0">
 
                             <h1 className="text-[30px]">Vida: {oponente.personagemAtivo ? oponente.hpAtivo : "--"}</h1>
+
+                            <div className="flex flex-col gap-2 max-h-[150px] overflow-y-auto inventory-scrollbar pr-2">
+                                {obterEfeitos(oponente).map((efeito, indice) => (
+                                    <StatusIcon
+                                        key={`${efeito.texto}-${indice}`}
+                                        texto={efeito.texto}
+                                        cor={efeito.cor}
+                                    />
+                                ))}
+                            </div>
 
                         </div>
 
