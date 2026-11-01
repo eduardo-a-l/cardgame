@@ -203,9 +203,9 @@ export default function Modal({
                     onClick={mostrarConfirmacao ? onConfirmar : onFechar}
                     className="mx-auto mt-10 min-w-48 rounded-xl border-2 border-[#C8911A] bg-[#21366B] px-10 py-4 font-semibold text-white transition hover:bg-[#2D4785] active:scale-95"
                 >
-                    {tipo === "pacote"  ? "Continuar"  : 
-                     tipo === "carta"   ? "Usar Carta" :
-                     mostrarConfirmacao ? "Confirmar"  : "Entendi"}
+                    {tipo === "pacote"                      ? "Continuar"  : 
+                     tipo === "carta" && mostrarConfirmacao ? "Usar Carta" :
+                     mostrarConfirmacao                     ? "Confirmar"  : "Entendi"}
                 </button>
             </div>
         </div>

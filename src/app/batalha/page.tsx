@@ -1,5 +1,5 @@
 "use client";
-import { JSX, useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 import { Botao } from "@/components/ui/Botao";
@@ -164,6 +164,12 @@ export default function TelaBatalha() {
 
     const [mostrarOverlayTurno, setMostrarOverlayTurno] = useState(false);
 
+    const [erroCarregamento, setErroCarregamento] = useState<string | null>(null);
+
+    const [statusResultado, setStatusResultado] = useState<"salvando" | "salvo" | "erro" | null>(null);
+
+    const [erroResultado, setErroResultado] = useState<string | null>(null);
+
     useEffect(() => {
         let cancelado = false;
 
@@ -236,6 +242,14 @@ export default function TelaBatalha() {
 
                 const cartasJogador2 = obterCartasDoBaralho(registrosBaralho2, idBaralho2);
 
+                if (!cartasJogador1.some(carta => carta.tipo === "Personagem")) {
+                    throw new Error("O baralho do Jogador 1 não possui personagens.");
+                }
+
+                if (!cartasJogador2.some(carta => carta.tipo === "Personagem")) {
+                    throw new Error("O baralho do Jogador 2 não possui personagens.");
+                }
+
                 const maoInicial1 = prepararMaoInicial(cartasJogador1);
 
                 const maoInicial2 = prepararMaoInicial(cartasJogador2);
@@ -257,17 +271,21 @@ export default function TelaBatalha() {
                 setJogador1(jogadorInicial1);
                 setJogador2(jogadorInicial2);
 
+                const primeiroJogadorEhJ1 = Math.random() < 0.5;
+
                 // A preparação inicial ainda precisa permitir
                 // que cada jogador escolha seu personagem.
                 setAguardandoSubstituicao(true);
-                setTurnoDoJogador1(Math.random() < 0.5);
+                setTurnoDoJogador1(primeiroJogadorEhJ1);
                 setContadorTurno(1);
                 setCampoAtivo(null);
                 setBatalhaFinalizada(false);
                 setVencedor(null);
                 setMostrarOverlayTurno(false);
-                setLogs([`Batalha iniciada: ${dadosJogador1.nomeUsuario} vs ${dadosJogador2.nomeUsuario}`]);
-
+                setLogs([
+                    `${primeiroJogadorEhJ1 ? jogadorInicial1.nome : jogadorInicial2.nome} deve escolher um personagem.`,
+                    `Batalha iniciada: ${dadosJogador1.nomeUsuario} vs ${dadosJogador2.nomeUsuario}`
+                ]);
                 console.log("Jogador 1:", jogadorInicial1);
                 console.log("Jogador 2:", jogadorInicial2);
                 console.log("Cartas do jogador 1:", jogadorInicial1.mao);
@@ -277,11 +295,12 @@ export default function TelaBatalha() {
                 if (cancelado) return
 
                 console.error("Erro ao carregar a batalha:", erro);
-                setLogs([
-                    erro instanceof Error
-                        ? erro.message
-                        : "Erro desconhecido ao carregar a batalha."
-                ]);
+                
+                const mensagem = erro instanceof Error ? erro.message : "Erro desconhecido ao carregar a batalha."
+
+                setErroCarregamento(mensagem);
+                setLogs([mensagem])
+
             } finally {
                 if (!cancelado) {
                     setCarregando(false);
@@ -307,7 +326,7 @@ export default function TelaBatalha() {
 
         let substituicaoPendente = aguardandoSubstituicao;
         let finalizada: boolean = batalhaFinalizada;
-        let vencedorAtual = vencedor;
+        let vencedorAtual: number | null = null;
 
         // Verifica se o jogador precisa escolher um personagem
         if (atual.personagemAtivo === null) {
@@ -391,24 +410,37 @@ export default function TelaBatalha() {
 
             if (morteOponente.finalizada) {
                 finalizada = true;
-                vencedorAtual = morteOponente.vencedor;
+                vencedorAtual = morteOponente.vencedorId;
             }
         }
 
-        // Por enquanto, os suportes ficam disponíveis.
-        // A restrição do Toxic Swamp será adicionada quando implementarmos os campos.
+        // Forest Glade: recupera 5 HP no início do turno.
+        if (campoAtivo?.nome === "Forest Glade" && atual.personagemAtivo !== null) {
+            const vidaBase = atual.personagemAtivo.vida ?? 100;
+
+            atual = {
+                ...atual,
+                hpAtivo: Math.min(atual.hpAtivo + 5, vidaBase)
+            };
+
+            registrarLog(`${atual.nome} recuperou 5 HP (Forest Glade)`);
+        }
+
+        // Toxic Swamp: impede o uso de suportes nos turnos pares.
         atual = {
             ...atual,
-            podeJogarSuporte: true
+            podeJogarSuporte:
+                campoAtivo?.nome === "Toxic Swamp"
+                    ? contadorTurno % 2 !== 0
+                    : true
         };
 
         salvarEstadosJogadores(atual, adversario);
 
         setAguardandoSubstituicao(substituicaoPendente);
 
-        if (finalizada) {
-            setBatalhaFinalizada(true);
-            setVencedor(vencedorAtual);
+        if (finalizada && vencedorAtual) {
+            finalizarBatalha(vencedorAtual);
         }
     }
 
@@ -442,65 +474,322 @@ export default function TelaBatalha() {
 
     function usarCartaSelecionada() {
         if (!cartaSelecionada || indiceCartaSelecionada === null) return;
+        if (batalhaFinalizada) return;
 
-        const jogadorAtualizado = {...jogadorDaVez}
+        let atual = jogadorDaVez;
+        let adversarioAtualizado = oponente;
 
-        switch (cartaSelecionada.tipo) {
+        const carta = cartaSelecionada;
+        const indice = indiceCartaSelecionada;
 
+        if ((atual.primeiroTurno || aguardandoSubstituicao) && carta.tipo !== "Personagem") {
+            registrarLog("Escolha um personagem");
+            return;
+        }
+
+        switch (carta.tipo) {
+
+            // PERSONAGEM
+            // ============================================
             case "Personagem": {
-                if (jogadorDaVez.personagemAtivo !== null) return;
+                if (atual.personagemAtivo !== null) return;
 
-                if (!jogadorDaVez.primeiroTurno && !aguardandoSubstituicao) return;
+                if (!atual.primeiroTurno && !aguardandoSubstituicao) return;
 
                 const consumirTurno = jogadorDaVez.primeiroTurno;
 
-                jogadorAtualizado.personagemAtivo = cartaSelecionada,
-                jogadorAtualizado.hpAtivo         = cartaSelecionada.vida ?? 100,
-                jogadorAtualizado.mao             = jogadorDaVez.mao.filter( (_, indice) => indice !== indiceCartaSelecionada ),
-                jogadorAtualizado.primeiroTurno   = false
+                let vidaInicial = cartaSelecionada.vida ?? 100;
+                let erraGolpe = false;
 
-                atualizarJogadorDaVez(jogadorAtualizado)
+                if (campoAtivo?.nome === "Rocky Hills") {
+                    vidaInicial -= 5;
+                    erraGolpe = Math.random() < 0.4;
+
+                    registrarLog(
+                        "Rocky Hills: tomou 5 de dano e pode errar o primeiro golpe"
+                    );
+                }
+
+                atual = {
+                    ...atual,
+                    personagemAtivo : carta,
+                    hpAtivo         : vidaInicial,
+                    erraProximoGolpe: erraGolpe,
+                    mao             : atual.mao.filter( (_, i) => i !== indice ),
+                    primeiroTurno   : false
+                }
+
+                registrarLog(`${atual.nome} invocou ${carta.nome}`);
 
                 setAguardandoSubstituicao(false);
-                setModalCartaAberto(false);
-                setCartaSelecionada(null);
-                setIndiceCartaSelecionada(null);
+                fecharModalCarta();
 
                 if (consumirTurno) {
-                    passarTurno(true, jogadorAtualizado);
+                    // a seleção inicial consome o turno
+                    passarTurno(true, atual, adversarioAtualizado);
                 }
-                
-                break
+                else {
+                    // a substituição não consome o turno
+                    salvarEstadosJogadores(atual, adversarioAtualizado)
+                }
+
+                return;
             }
 
-            case "Suporte":
-                // Aplicar o efeito do suporte
-                break;
+            // SUPORTE
+            //========================================
+            case "Suporte": {
+                if (!atual.podeJogarSuporte) {
+                    registrarLog("Toxic Swamp: Não pode usar suporte agora");
+                    return;
+                }
 
-            case "Campo":
-                // Ativar ou trocar o campo
-                break;
+                switch (carta.nome) {
+
+                    case "Heal Injection": {
+                        const vidaBase = atual.personagemAtivo?.vida ?? 100;
+
+                        atual = {
+                            ...atual,
+                            hpAtivo: Math.min(atual.hpAtivo + 20, vidaBase)
+                        };
+
+                        registrarLog(`${atual.nome} curou 20 HP`);
+                        break;
+                    }
+
+                    case "Attack Injection": {
+                        atual = {
+                            ...atual,
+                            buffDano: {
+                                valor: 8,
+                                duracao: 3
+                            }
+                        };
+
+                        registrarLog("+8 Dano de ações ofensivas por 3 turnos");
+                        break;
+                    }
+
+                    case "Defense Injection": {
+                        atual = {
+                            ...atual,
+                            buffDefesa: {
+                                valor: 5,
+                                duracao: 4
+                            }
+                        };
+
+                        registrarLog("-5 Dano recebido por 4 turnos");
+                        break;
+                    }
+
+                    case "Researcher's Help": {
+                        atual = {
+                            ...atual,
+                            buffDefesa: {
+                                valor: 8,
+                                duracao: 6
+                            }
+                        };
+
+                        registrarLog("-8 Dano recebido por 6 turnos");
+
+                        if (adversarioAtualizado.mao.length > 0) {
+                            const indiceAleatorio = Math.floor(
+                                Math.random() * adversarioAtualizado.mao.length
+                            );
+
+                            const cartaRevelada =
+                                adversarioAtualizado.mao[indiceAleatorio];
+
+                            registrarLog(
+                                `Revelado da mão do oponente: ${cartaRevelada.nome}`
+                            );
+                        }
+
+                        break;
+                    }
+
+                    case "King's Blessing": {
+                        atual = {
+                            ...atual,
+                            buffDano: {
+                                valor: 15,
+                                duracao: 5
+                            }
+                        };
+
+                        registrarLog("+15 Dano de ações ofensivas por 5 turnos");
+                        break;
+                    }
+
+                    case "Queen's Blessing": {
+                        atual = {
+                            ...atual,
+                            buffDefesa: {
+                                valor: 15,
+                                duracao: 5
+                            }
+                        };
+
+                        registrarLog("-15 Dano recebido por 5 turnos");
+                        break;
+                    }
+
+                    case "Focus Lens": {
+                        atual = {
+                            ...atual,
+                            duracaoFocusLens: 7
+                        };
+
+                        registrarLog(
+                            `${atual.nome} usou Focus Lens (Proteção contra erro por 7 turnos)`
+                        );
+                        break;
+                    }
+
+                    case "Smokescreen": {
+                        adversarioAtualizado = {
+                            ...adversarioAtualizado,
+                            duracaoSmokescreen: 5
+                        };
+
+                        registrarLog(
+                            `${atual.nome} usou Smokescreen. Oponente terá chance de erro por 5 turnos`
+                        );
+                        break;
+                    }
+
+                    case "Sharp Claws": {
+                        atual = {
+                            ...atual,
+                            itensAtivos: {
+                                ...atual.itensAtivos,
+                                sharpClaws: true
+                            }
+                        };
+
+                        registrarLog(`${atual.nome} equipou Sharp Claws`);
+                        break;
+                    }
+
+                    case "Rigid Shell": {
+                        atual = {
+                            ...atual,
+                            itensAtivos: {
+                                ...atual.itensAtivos,
+                                rigidShell: true
+                            }
+                        };
+
+                        registrarLog(`${atual.nome} equipou Rigid Shell`);
+                        break;
+                    }
+
+                    case "Life Draining Flower": {
+                        atual = {
+                            ...atual,
+                            itensAtivos: {
+                                ...atual.itensAtivos,
+                                lifeDrainingFlower: true
+                            }
+                        };
+
+                        registrarLog(`${atual.nome} usou Life Draining Flower`);
+                        break;
+                    }
+
+                    case "Devouring Orb": {
+                        atual = {
+                            ...atual,
+                            itensAtivos: {
+                                ...atual.itensAtivos,
+                                devouringOrb: true
+                            },
+                            hpColetadoOrb: 0
+                        };
+
+                        registrarLog(`${atual.nome} usou Devouring Orb`);
+                        break;
+                    }
+
+                    default: {
+                        registrarLog(`${atual.nome} usou ${carta.nome}`);
+                        break;
+                    }
+                }
+
+                // Remove o suporte da mão.
+                atual = {
+                    ...atual,
+                    mao: atual.mao.filter((_, i) => i !== indice)
+                };
+
+                fecharModalCarta();
+
+                // O suporte consome o turno.
+                passarTurno(false, atual, adversarioAtualizado);
+
+                return;
+            }
+
+            // CAMPO
+            //================================================
+            case "Campo": {
+
+                setCampoAtivo(carta);
+
+                atual = {
+                    ...atual,
+                    mao: atual.mao.filter((_, i) => i !== indice)
+                };
+
+                registrarLog(`Campo Ativo: ${carta.nome}`);
+
+                salvarEstadosJogadores(atual, adversarioAtualizado);
+
+                fecharModalCarta();
+
+                // Campo NÃO consome o turno.
+                return;
+            }
 
             default:
                 console.log("Tipo de carta desconhecido:", cartaSelecionada.tipo);
                 return;
         }
+    }
 
+    function fecharModalCarta() {
+        setModalCartaAberto(false);
         setCartaSelecionada(null);
         setIndiceCartaSelecionada(null);
     }
-
-    function passarTurno(liberarSelecaoInicial: boolean = false, jogadorAtualizadoInicial?: EstadoJogador) {
-        if (aguardandoSubstituicao && !batalhaFinalizada && !liberarSelecaoInicial) {
-            return;
-        }
+                      // fica true se, no primeiro turno, 
+                      // o aguardandoSubstituição como 'false' 
+                      // ainda não foi registrado
+    function passarTurno(liberarSelecaoInicial: boolean = false, 
+                         jogadorAtualizadoInicial?: EstadoJogador, oponenteAtualizadoInicial?: EstadoJogador,
+                         substituicaoPendenteInicial?: boolean) {
+    
+        if (batalhaFinalizada) return;
 
         let atual = jogadorAtualizadoInicial ?? jogadorDaVez;
-        let adversario = oponente;
+        let adversario = oponenteAtualizadoInicial ?? oponente;
 
-        let finalizada = batalhaFinalizada;
-        let vencedorAtual = vencedor;
-        let substituicaoPendente = liberarSelecaoInicial ? false : aguardandoSubstituicao;
+        let substituicaoPendente = liberarSelecaoInicial ? false : substituicaoPendenteInicial ?? aguardandoSubstituicao;
+
+        let finalizada: boolean = batalhaFinalizada;
+        let vencedorAtual: number | null = null;
+        
+        // Se o próprio jogador precisa substituir seu personagem,
+        // salva os estados, mas não passa o turno.
+        if (substituicaoPendente && !liberarSelecaoInicial) {
+            salvarEstadosJogadores(atual, adversario);
+            setAguardandoSubstituicao(true);
+            return;
+        }
 
         // Devouring Orb
         if (atual.itensAtivos.devouringOrb && adversario.personagemAtivo !== null) {
@@ -533,13 +822,15 @@ export default function TelaBatalha() {
 
             if (morteOponente.finalizada) {
                 finalizada = true;
-                vencedorAtual = morteOponente.vencedor;
+                vencedorAtual = morteOponente.vencedorId;
             }
 
             if (finalizada) {
                 salvarEstadosJogadores(atual, adversario);
-                setBatalhaFinalizada(true);
-                setVencedor(vencedorAtual);
+
+                if (vencedorAtual) {
+                    finalizarBatalha(vencedorAtual)
+                }
                 return;
             }
 
@@ -583,7 +874,7 @@ export default function TelaBatalha() {
 
                 if (morteJogador.finalizada) {
                     finalizada = true;
-                    vencedorAtual = morteJogador.vencedor;
+                    vencedorAtual = morteJogador.vencedorId;
                 }
 
                 if (morteJogador.aguardandoSubstituicao) {
@@ -597,9 +888,8 @@ export default function TelaBatalha() {
 
         setAguardandoSubstituicao(substituicaoPendente);
 
-        if (finalizada) {
-            setBatalhaFinalizada(true);
-            setVencedor(vencedorAtual);
+        if (finalizada && vencedorAtual) {
+            finalizarBatalha(vencedorAtual)
             return;
         }
 
@@ -614,8 +904,14 @@ export default function TelaBatalha() {
 
         setTurnoDoJogador1(proximoTurnoDoJogador1);
 
+        const configuracaoConcluidaAgora = liberarSelecaoInicial && !atual.primeiroTurno && !adversario.primeiroTurno;
+
+        // define o contador como dois após ambos os jogadores escolherem os personagens ativos
+        if (configuracaoConcluidaAgora) {
+            setContadorTurno(2);
+        }
         // Incrementa o contador quando o turno volta ao jogador 1
-        if (proximoTurnoDoJogador1) {
+        else if (!atual.primeiroTurno && !adversario.primeiroTurno && proximoTurnoDoJogador1) {
             setContadorTurno(anterior => anterior + 1);
         }
     }
@@ -673,7 +969,7 @@ export default function TelaBatalha() {
                 atual,
                 adversario,
                 finalizada: false,
-                vencedor: null,
+                vencedorId: null,
                 logs: [] as string[]
             };
         }
@@ -708,7 +1004,7 @@ export default function TelaBatalha() {
             atual: atualizadaAtual,
             adversario: atualizadaAdversario,
             finalizada,
-            vencedor: finalizada ? atual.nome : null,
+            vencedorId: finalizada ? atualizadaAtual.idUsuario : null,
             logs: logsNovos
         };
     }
@@ -719,7 +1015,7 @@ export default function TelaBatalha() {
                 atual,
                 adversario,
                 finalizada: false,
-                vencedor: null,
+                vencedorId: null,
                 aguardandoSubstituicao: false,
                 logs: [] as string[]
             };
@@ -753,7 +1049,7 @@ export default function TelaBatalha() {
             atual: atualizadaAtual,
             adversario: atualizadaAdversario,
             finalizada,
-            vencedor: finalizada ? adversario.nome : null,
+            vencedorId: finalizada ? atualizadaAdversario.idUsuario : null,
             aguardandoSubstituicao: !finalizada,
             logs: logsNovos
         };
@@ -761,6 +1057,535 @@ export default function TelaBatalha() {
 
     function registrarLog(mensagem: string) {
         setLogs(anterior => [mensagem, ...anterior].slice(0, 15));
+    }
+
+    function executarAcao(numeroAcao: number = 1) {
+        if (batalhaFinalizada) return;
+
+        if ( numeroAcao === 2 && !jogadorDaVez.personagemAtivo?.acao2 ) {
+            return;
+        }
+
+        if (aguardandoSubstituicao) {
+            registrarLog("Escolha um personagem");
+            return;
+        }
+
+        let atual = jogadorDaVez;
+        let adversario = oponente;
+
+        const personagem = atual.personagemAtivo;
+
+        if (!personagem) return;
+
+        // Paralisação
+        if (atual.turnosSemAcao > 0) {
+            registrarLog(
+                `${personagem.nome} está paralisado (${atual.turnosSemAcao} turnos restantes)`
+            );
+
+            passarTurno();
+            return;
+        }
+
+        // Verifica se o golpe será errôneo.
+        let errou = false;
+
+        if (atual.erraProximoGolpe) {
+            errou = true;
+
+            atual = {
+                ...atual,
+                erraProximoGolpe: false
+            };
+
+            registrarLog(`${personagem.nome} errou o golpe devido ao Rocky Hills`);
+        }
+
+        else if ( atual.duracaoSmokescreen > 0 && atual.duracaoFocusLens <= 0 ) {
+            if (Math.random() * 100 < 20) {
+                errou = true;
+
+                registrarLog(`${personagem.nome} errou o golpe devido ao Smokescreen`);
+            }
+        }
+        else if ( campoAtivo?.nome === "Foggy Valley" && atual.duracaoFocusLens <= 0
+        ) {
+            if (Math.random() * 100 < 15) {
+                errou = true;
+
+                registrarLog(`${personagem.nome} errou o golpe na neblina`);
+            }
+        }
+
+        if (errou) {
+            passarTurno(false, atual, adversario);
+            return;
+        }
+
+        // Concentração da Sword Legend:
+        // prepara a próxima ação para ignorar defesa e receber bônus crítico.
+        if (atual.ignorarDefesaProx) {
+            atual = {
+                ...atual,
+                ignorarDefesa: true,
+                bonusChanceCrit: 30,
+                ignorarDefesaProx: false,
+                bonusCritProx: false
+            };
+        }
+
+        let danoBase = 0;
+        let bonusDano = 0;
+        let curaPropria = 0;
+
+        const vidaBase = personagem.vida ?? 100;
+
+        // Habilidades dos personagens
+        switch (personagem.nome) {
+
+            case "Sword Apprentice":
+                if (numeroAcao === 1) {
+                    danoBase = 15;
+
+                    if (Math.random() * 100 < 10) {
+                        bonusDano = 5;
+                    }
+                }
+                break;
+
+            case "Magic Apprentice":
+                if (numeroAcao === 1) {
+                    danoBase = 10;
+                    curaPropria = 5;
+                }
+                break;
+
+            case "Thief":
+                if (numeroAcao === 1) {
+                    danoBase = 5;
+
+                    if ( adversario.buffDano.valor > 0 || adversario.buffDefesa.valor > 0 ) {
+                        atual = {
+                            ...atual,
+                            buffDano: { ...adversario.buffDano },
+                            buffDefesa: { ...adversario.buffDefesa }
+                        };
+
+                        adversario = {
+                            ...adversario,
+                            buffDano: { valor: 0, duracao: 0 },
+                            buffDefesa: { valor: 0, duracao: 0 }
+                        };
+
+                        registrarLog("Thief roubou os efeitos de suporte");
+                    }
+                }
+                break;
+
+            case "Sword Master":
+                if (numeroAcao === 1) {
+                    danoBase = 20;
+
+                    if (Math.random() * 100 < 50) {
+                        bonusDano = 5;
+                    }
+                }
+                break;
+
+            case "Magic Master":
+                if (numeroAcao === 1) {
+                    danoBase = 10;
+                    curaPropria = 10;
+
+                    if (Math.random() * 100 < 20) {
+                        bonusDano = 10;
+                    }
+                }
+                break;
+
+            case "Alchemist":
+                if (numeroAcao === 1) {
+                    danoBase = 10;
+
+                    if (Math.random() * 100 < 20) {
+                        adversario = {
+                            ...adversario,
+                            buffDano: { valor: 0, duracao: 0 },
+                            buffDefesa: { valor: 0, duracao: 0 }
+                        };
+
+                        registrarLog("Alchemist limpou os efeitos do inimigo");
+                    }
+                }
+                break;
+
+            case "Assassin":
+                if (numeroAcao === 1) {
+                    danoBase = 25;
+
+                    const vidaBaseOponente =
+                        adversario.personagemAtivo?.vida ?? 100;
+
+                    if (adversario.hpAtivo >= vidaBaseOponente) {
+                        bonusDano = 15;
+                    }
+                }
+                break;
+
+            case "Reaper":
+                if (numeroAcao === 1) {
+                    danoBase = 15;
+                }
+                else if (numeroAcao === 2) {
+                    danoBase = 10;
+                    curaPropria = 10;
+
+                    const vidaBaseOponente = adversario.personagemAtivo?.vida ?? 100;
+
+                    if (adversario.hpAtivo < vidaBaseOponente / 2) {
+                        bonusDano = 20;
+                    }
+                }
+                break;
+
+            case "Dragon Knight":
+                if (numeroAcao === 1) {
+                    danoBase = 25;
+                }
+                else if (numeroAcao === 2) {
+                    atual = {
+                        ...atual,
+                        turnosSemAcao: 2,
+                        refletirDano: true
+                    };
+
+                    registrarLog(
+                        "Dragon Knight em postura de contra-ataque (2 turnos)"
+                    );
+
+                    passarTurno(false, atual, adversario);
+                    return;
+                }
+                break;
+
+            case "Sword Legend":
+                if (numeroAcao === 1) {
+                    danoBase = 20;
+
+                    const chanceCritica = 40 + atual.bonusChanceCrit;
+
+                    if (Math.random() * 100 < chanceCritica) {
+                        bonusDano = 15;
+                    }
+                    atual = {
+                        ...atual,
+                        bonusChanceCrit: 0
+                    };
+
+                }
+                else if (numeroAcao === 2) {
+                    atual = {
+                        ...atual,
+                        ignorarDefesa: false,
+                        bonusChanceCrit: 0,
+                        ignorarDefesaProx: true,
+                        bonusCritProx: true
+                    };
+
+                    registrarLog(
+                        "Sword Legend concentrando poder. Próxima ação ignorará defesa e terá +30% crítico"
+                    );
+
+                    passarTurno(false, atual, adversario);
+                    return;
+                }
+                break;
+
+            default:
+                danoBase = 15;
+                break;
+        }
+
+        // Calcula o dano total.
+        let danoTotal = 0;
+
+        if (danoBase > 0 || bonusDano > 0) {
+            danoTotal =
+                danoBase +
+                bonusDano +
+                atual.buffDano.valor;
+
+            // Fiery Field: +10 de dano.
+            if (campoAtivo?.nome === "Fiery Field") {
+                danoTotal += 10;
+            }
+
+            // Sharp Claws: +8 contra personagens com até 100 de vida-base.
+            if (atual.itensAtivos.sharpClaws) {
+
+                const vidaBaseOponente = adversario.personagemAtivo?.vida ?? 100;
+
+                if (vidaBaseOponente <= 100) {
+                    danoTotal += 8;
+                    registrarLog("Sharp Claws: +8 de dano");
+                }
+            }
+        }
+
+        // Calcula a redução de dano.
+        let reducao = atual.ignorarDefesa ? 0 : adversario.buffDefesa.valor;
+
+        // Tidal Seas: +10 de redução quando o oponente
+        // está abaixo da metade da vida-base.
+        if (campoAtivo?.nome === "Tidal Seas") {
+
+            const vidaBaseOponente = adversario.personagemAtivo?.vida ?? 100;
+
+            if ( adversario.hpAtivo < vidaBaseOponente / 2 && !atual.ignorarDefesa) {
+                reducao += 10;
+            }
+        }
+
+        let danoFinal = Math.max(danoTotal - reducao, 0);
+
+        // Rigid Shell: reduz 6 de dano recebido quando o dano é de pelo menos 15.
+        if (adversario.itensAtivos.rigidShell && danoFinal >= 15) {
+            danoFinal -= 6;
+            registrarLog("Rigid Shell: Dano reduzido em 6");
+        }
+
+        // Aplica o dano ao oponente.
+        adversario = {
+            ...adversario,
+            hpAtivo: adversario.hpAtivo - danoFinal
+        };
+
+        // Aplica a cura do próprio personagem.
+        atual = {
+            ...atual,
+            hpAtivo: Math.min(atual.hpAtivo + curaPropria, vidaBase)
+        };
+
+        // Reflexão de dano.
+        let substituicaoPendente = false;
+        let finalizada = false;
+        let vencedorAtual: number | null = null;
+        let jogadorMorreuPorReflexao = false;
+
+        if (adversario.refletirDano && danoFinal > 0) {
+            const danoRefletido = Math.floor(danoFinal * 0.5);
+
+            atual = {
+                ...atual,
+                hpAtivo: atual.hpAtivo - danoRefletido
+            };
+
+            if (atual.hpAtivo <= 0 && atual.personagemAtivo !== null) {
+                jogadorMorreuPorReflexao = true;
+            }
+
+            registrarLog(
+                `Contra-ataque. ${atual.nome} recebeu ${danoRefletido} de volta`
+            );
+
+            // Verifica se o personagem do próprio jogador morreu.
+            const morteJogador = resolverMorteJogador(atual, adversario);
+
+            atual = morteJogador.atual;
+            adversario = morteJogador.adversario;
+
+            morteJogador.logs.forEach(registrarLog);
+
+            if (morteJogador.finalizada) {
+                finalizada = true;
+                vencedorAtual = morteJogador.vencedorId;
+            }
+
+            if (morteJogador.aguardandoSubstituicao) {
+                substituicaoPendente = true;
+            }
+        }
+
+        // Consome o efeito de ignorar defesa após o ataque.
+        atual = {
+            ...atual,
+            ignorarDefesa: false
+        };
+
+        // Registra o ataque.
+        const nomeAcao = numeroAcao === 1 ? "Ação 1" : "Ação 2";
+
+        const logCura = curaPropria > 0
+            ? ` / ${curaPropria} cura`
+            : "";
+
+        registrarLog(
+            `${personagem.nome} usou ${nomeAcao}: ${danoFinal} dano${logCura}`
+        );
+
+        const oponenteMorreuNesteAtaque =
+            adversario.personagemAtivo !== null &&
+            adversario.hpAtivo <= 0;
+
+        // Verifica a derrota do oponente.
+        const morteOponente = resolverMorteOponente(atual, adversario);
+
+        atual = morteOponente.atual;
+        adversario = morteOponente.adversario;
+
+        morteOponente.logs.forEach(registrarLog);
+
+        if (jogadorMorreuPorReflexao && oponenteMorreuNesteAtaque) {
+            finalizada = true;
+            vencedorAtual = atual.idUsuario;
+            substituicaoPendente = false;
+
+            registrarLog(
+                `Morte simultânea! ${atual.nome} venceu por derrotar o personagem adversário no mesmo ataque.`
+            );
+        }
+        else if (morteOponente.finalizada) {
+            finalizada = true;
+            vencedorAtual = morteOponente.vencedorId;
+        }
+
+        // Verifica novamente a morte do jogador, caso ainda tenha personagem.
+        if (!finalizada && atual.personagemAtivo !== null) {
+            const morteJogador = resolverMorteJogador(atual, adversario);
+
+            atual = morteJogador.atual;
+            adversario = morteJogador.adversario;
+
+            morteJogador.logs.forEach(registrarLog);
+
+            if (morteJogador.finalizada) {
+                finalizada = true;
+                vencedorAtual = morteJogador.vencedorId;
+            }
+
+            if (morteJogador.aguardandoSubstituicao) {
+                substituicaoPendente = true;
+            }
+        }
+
+        // Atualiza os estados e encerra a batalha, se necessário.
+        if (finalizada && vencedorAtual) {
+            salvarEstadosJogadores(atual, adversario);
+            finalizarBatalha(vencedorAtual);
+            return;
+        }
+
+        // Passa o turno normalmente ou mantém o jogador atual
+        // aguardando a substituição, caso tenha sido derrotado.
+        passarTurno(
+            false,
+            atual,
+            adversario,
+            substituicaoPendente
+        );
+    }
+
+    function desistir() {
+        if (batalhaFinalizada || carregando) return;
+
+        registrarLog(`${jogadorDaVez.nome} desistiu da batalha.`);
+
+        finalizarBatalha(oponente.idUsuario);
+    }
+
+    function finalizarBatalha(idVencedor: number) {
+        if (batalhaFinalizada) return;
+
+        const vencedorEhJogador1 = idVencedor === jogador1.idUsuario;
+        const vencedorEhJogador2 = idVencedor === jogador2.idUsuario;
+
+        if (!vencedorEhJogador1 && !vencedorEhJogador2) {
+            const mensagem = "Não foi possível identificar o vencedor da batalha.";
+
+            setVencedor(null);
+            setBatalhaFinalizada(true);
+            setMostrarOverlayTurno(false);
+            setAguardandoSubstituicao(false);
+            setStatusResultado("erro");
+            setErroResultado(mensagem);
+
+            registrarLog(mensagem);
+            return;
+        }
+
+        const idPerdedor = vencedorEhJogador1
+            ? jogador2.idUsuario
+            : jogador1.idUsuario;
+
+        const nomeVencedor = vencedorEhJogador1
+            ? jogador1.nome
+            : jogador2.nome;
+
+        setVencedor(nomeVencedor);
+        setBatalhaFinalizada(true);
+        setMostrarOverlayTurno(false);
+        setAguardandoSubstituicao(false);
+
+        setModalCartaAberto(false);
+        setCartaSelecionada(null);
+        setIndiceCartaSelecionada(null);
+
+        setStatusResultado("salvando");
+        setErroResultado(null);
+
+        void sincronizarResultado(idVencedor, idPerdedor);
+    }
+
+    async function sincronizarResultado(idVencedor: number, idPerdedor: number) {
+
+        if (idVencedor <= 0 || idPerdedor <= 0) {
+            const mensagem = "Erro: ID de um dos jogadores inválido.";
+
+            setStatusResultado("erro");
+            setErroResultado(mensagem);
+            registrarLog(mensagem);
+
+            return;
+        }
+
+        try {
+            const resposta = await fetch(
+                "http://localhost:8081/Usuarios/resultado-batalha",
+                {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        idVencedor,
+                        idPerdedor
+                    })
+                }
+            );
+
+            const dados = await resposta.json();
+
+            if (!resposta.ok) {
+                throw new Error(
+                    dados.erro ?? "Erro ao salvar o resultado da batalha."
+                );
+            }
+
+            setStatusResultado("salvo")
+
+            registrarLog(dados.Mensagem ?? "Resultado salvo com sucesso");
+
+        } catch (erro) {
+            const mensagem = erro instanceof Error
+                ? erro.message
+                : String(erro);
+
+            setStatusResultado("erro");
+            setErroResultado(mensagem);
+
+            registrarLog(`Erro ao salvar resultado: ${mensagem}`);
+        }
     }
 
     function exibirCarta(borda: string, largura: string[], 
@@ -794,6 +1619,34 @@ export default function TelaBatalha() {
             </div>
         )
     }
+    if (erroCarregamento) {
+        return (
+            <main className="h-screen bg-[#1B1B2F] flex items-center justify-center p-6 text-white">
+
+                <div className="flex flex-col items-center gap-6 text-center">
+
+                    <h1 className="text-[clamp(30px,3vw,50px)] font-bold text-red-400">
+                        Não foi possível iniciar a batalha
+                    </h1>
+
+                    <p className="text-[clamp(18px,1.5vw,26px)]">
+                        {erroCarregamento}
+                    </p>
+
+                    <button
+                        type="button"
+                        onClick={() => router.push("/selecionar-oponente")}
+                        className="rounded-xl border-2 border-[#C8911A] bg-[#21366B] px-10 py-4 text-xl font-semibold text-white transition hover:bg-[#2D4785] active:scale-95"
+                    >
+                        Voltar
+                    </button>
+
+                </div>
+
+            </main>
+        );
+    }
+
     return (
         
         <main className="relative h-screen bg-[#1B1B2F] flex justify-center overflow-y-auto inventory-scrollbar">
@@ -895,6 +1748,14 @@ export default function TelaBatalha() {
                                     texto="Ação 1"      
                                     raio={20}
                                     borda="border-[5px]"
+                                    onClick={() => executarAcao(1)}
+                                    disabled={
+                                        carregando ||
+                                        batalhaFinalizada ||
+                                        mostrarOverlayTurno ||
+                                        aguardandoSubstituicao ||
+                                        !jogadorDaVez.personagemAtivo
+                                    }
                                     className="w-[clamp(105px,9.4729vw,182px)] h-[clamp(45px,9.4815vh,83px)] flex items-center justify-center text-center text-[clamp(10px,1.5625vw,30px)]"
                                 />
 
@@ -902,6 +1763,15 @@ export default function TelaBatalha() {
                                     texto="Ação 2"      
                                     raio={20}
                                     borda="border-[5px]"
+                                    onClick={() => executarAcao(2)}
+                                    disabled={
+                                        carregando ||
+                                        batalhaFinalizada ||
+                                        mostrarOverlayTurno ||
+                                        aguardandoSubstituicao ||
+                                        !jogadorDaVez.personagemAtivo ||
+                                        !jogadorDaVez.personagemAtivo?.acao2
+                                    }
                                     className="w-[clamp(105px,9.4729vw,182px)] h-[clamp(45px,9.4815vh,83px)] flex items-center justify-center text-center text-[clamp(10px,1.5625vw,30px)]"
                                 />
 
@@ -911,6 +1781,14 @@ export default function TelaBatalha() {
                                 texto="Passar o turno"      
                                 raio={20}
                                 borda="border-[5px]"
+                                onClick={() => passarTurno()}
+                                disabled={
+                                    carregando ||
+                                    batalhaFinalizada ||
+                                    mostrarOverlayTurno ||
+                                    aguardandoSubstituicao ||
+                                    !jogadorDaVez.personagemAtivo
+                                }
                                 className="w-[clamp(180px,16.1313vw,310px)] h-[clamp(45px,9.4815vh,83px)] flex items-center justify-center text-center text-[clamp(10px,1.5625vw,30px)]"
                             />
 
@@ -929,7 +1807,22 @@ export default function TelaBatalha() {
 
                     <h1 className="text-[clamp(24px,2.5833vw,40px)] text-center">Log de Batalha</h1>
 
-                    <div className="h-[80%] w-[95%]"></div>
+                    <div className="h-[80%] w-[95%] mx-auto overflow-y-auto flex flex-col gap-2 px-3 py-2">
+                        {logs.length === 0 ? (
+                                <p className="text-center text-gray-400">
+                                    Nenhuma ação realizada.
+                                </p>
+                            ) : (
+                                logs.map((mensagem, indice) => (
+                                    <p
+                                        key={`${indice}-${mensagem}`}
+                                        className="text-white text-[clamp(13px,1.1vw,21px)] break-words"
+                                    >
+                                        {mensagem}
+                                    </p>
+                                ))
+                            )}
+                    </div>
 
                 </div>
 
@@ -940,6 +1833,8 @@ export default function TelaBatalha() {
                         texto="Desistir"
                         raio={20}
                         borda="border-[5px]"
+                        onClick={desistir}
+                        disabled={carregando || batalhaFinalizada}
                         className="w-[clamp(200px,20.625vw,396px)] h-[clamp(65px,11.2593vh,121px)] flex items-center justify-center text-center text-[clamp(30px,3.6042vw,70px)]"
                     />
 
@@ -979,16 +1874,60 @@ export default function TelaBatalha() {
                 </div>
             )}
 
+            {batalhaFinalizada && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
+                    <div className="flex w-full max-w-xl flex-col items-center gap-5 rounded-2xl border-2 border-[#C8911A] bg-[#1B1B2F] p-10 text-center text-white shadow-2xl">
+
+                        <h1 className="text-[clamp(32px,3vw,58px)] font-bold text-[#C8911A]">
+                            Fim de batalha!
+                        </h1>
+
+                        <p className="text-[clamp(22px,1.8vw,34px)]">
+                            Vencedor:
+                        </p>
+
+                        <h2 className="text-[clamp(28px,2.5vw,48px)] font-bold">
+                            {vencedor ?? "Não identificado"}
+                        </h2>
+
+                        {statusResultado === "salvando" && (
+                            <p className="text-yellow-400">
+                                Salvando resultado no banco de dados...
+                            </p>
+                        )}
+
+                        {statusResultado === "salvo" && (
+                            <p className="text-green-400">
+                                Resultado registrado com sucesso!
+                            </p>
+                        )}
+
+                        {statusResultado === "erro" && (
+                            <p className="text-red-400">
+                                Não foi possível registrar o resultado: {erroResultado}
+                            </p>
+                        )}
+
+                        <button
+                            type="button"
+                            onClick={() => router.push("/")}
+                            className="mt-4 rounded-xl border-2 border-[#C8911A] bg-[#21366B] px-10 py-4 text-xl font-semibold text-white transition hover:bg-[#2D4785] active:scale-95"
+                        >
+                            Voltar
+                        </button>
+
+                    </div>
+                </div>
+            )}
+
             <Modal
                 aberto={modalCartaAberto}
                 titulo={cartaSelecionada?.nome ?? "Carta"}
                 tipo="carta"
                 carta={cartaSelecionada ?? undefined}
                 mostrarConfirmacao={mostrarConfirmacao}
-                onFechar={() => setModalCartaAberto(false)}
-                onConfirmar={() => {
-                    usarCartaSelecionada
-                }}
+                onFechar={ fecharModalCarta }
+                onConfirmar={ usarCartaSelecionada }
             />
 
         </main>
