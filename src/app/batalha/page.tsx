@@ -1738,9 +1738,14 @@ export default function TelaBatalha() {
             <div className="flex flex-col w-[76vw] h-full">
 
                 {/*Barra Superior*/}
-                <div className="flex items-center justify-center gap-[3vw] h-[15vh]">
+                <div className="flex items-center justify-around gap-[3vw] h-[15vh]">
 
-                    <h1 className="text-[52px] shrink-0">{oponente.nome}</h1>
+                    <h1 className={`${oponente.nome.length > 10
+                                        ? "text-[clamp(35px,3.125vw,60px)]"
+                                        : "text-[clamp(45px,3.75vw,72px)]"
+                    }`}>
+                        {oponente.nome}
+                    </h1>
 
                     <div className="flex items-center gap-[3vw] overflow-x-auto min-w-0 max-w-[37vw] pb-3 inventory-scrollbar">
                         {oponente.mao.map((carta, indice) => (
@@ -1757,18 +1762,18 @@ export default function TelaBatalha() {
                 </div>
 
                 {/*Campo de Batalha */}
-                <div className="relative flex items-center h-[53vh]">
+                <div className="relative flex items-center h-[50.5vh]">
                     {/*Carta Jogador*/}
                     <div className="flex items-center justify-center w-[50%] h-full bg-[#363C4B]  gap-[20px]">
                         
                         <div className="flex flex-col">
-                            <h1 className="text_dinheiro text-[30px]">Você</h1>
-                            {exibirCarta("border-[#C8911A]", ["w-[clamp(180px,13.0208vw,250px)]", ""], "h-[clamp(240px,31.4815vh,340px)]", "", jogadorDaVez.personagemAtivo?.nome ?? "Selecione um personagem", jogadorDaVez.personagemAtivo ? "text-[40px]" : "text-[25px]", "rounded-[15px]", "bg-[#21366B]", jogadorDaVez.personagemAtivo !== null, true, jogadorDaVez.personagemAtivo ? () => abrirModalCarta(jogadorDaVez.personagemAtivo!, false) : undefined)}
+                            <h1 className="text_dinheiro text-[clamp(25px,2.0833vw,40px)]">Você</h1>
+                            {exibirCarta("border-[#C8911A]", ["w-[clamp(180px,13.0208vw,250px)]", ""], "h-[clamp(240px,31.4815vh,340px)]", "", jogadorDaVez.personagemAtivo?.nome ?? "Selecione um personagem", jogadorDaVez.personagemAtivo ? "text-[40px]" : "text-[25px]", "rounded-[30px]", "bg-[#21366B]", jogadorDaVez.personagemAtivo !== null, true, jogadorDaVez.personagemAtivo ? () => abrirModalCarta(jogadorDaVez.personagemAtivo!, false) : undefined)}
                         </div>
 
                         <div className="flex flex-col justify-start gap-[10px] h-[clamp(240px,31.4815vh,340px)] mt-[50px] min-w-0">
-
-                            <h1 className="text-[30px]">Vida: {jogadorDaVez.personagemAtivo ? jogadorDaVez.hpAtivo : "--"}</h1>
+                                            
+                            <h1 className="text-[clamp(25px,2.0833vw,40px)]">Vida: {jogadorDaVez.personagemAtivo ? jogadorDaVez.hpAtivo : "--"}</h1>
 
                             <div className="flex flex-col gap-2 max-h-[150px] overflow-y-auto inventory-scrollbar pr-2">
                                 {obterEfeitos(jogadorDaVez).map((efeito, indice) => (
@@ -1806,15 +1811,15 @@ export default function TelaBatalha() {
                     <div className="flex items-center justify-center w-[50%] h-full bg-[#363C4B] gap-[20px]">
                         
                         <div className="flex flex-col">
-                            <h1 className="text-[30px]" style={{ color: "#B4B4B4" }}>
+                            <h1 className="text-[clamp(25px,2.0833vw,40px)]" style={{ color: "#B4B4B4" }}>
                                 {oponente.nome}
                             </h1>
-                            {exibirCarta("border-[#C8911A]", ["w-[clamp(180px,13.0208vw,250px)]", ""], "h-[clamp(240px,31.4815vh,340px)]", "", oponente.personagemAtivo?.nome ?? "Ainda não escolhido", oponente.personagemAtivo ? "text-[40px]" : "text-[25px]", "rounded-[15px]", "bg-[#21366B]", oponente.personagemAtivo !== null, true, oponente.personagemAtivo ? () => abrirModalCarta(oponente.personagemAtivo!, false) : undefined)}
+                            {exibirCarta("border-[#C8911A]", ["w-[clamp(180px,13.0208vw,250px)]", ""], "h-[clamp(240px,31.4815vh,340px)]", "", oponente.personagemAtivo?.nome ?? "Ainda não escolhido", oponente.personagemAtivo ? "text-[40px]" : "text-[25px]", "rounded-[30px]", "bg-[#21366B]", oponente.personagemAtivo !== null, true, oponente.personagemAtivo ? () => abrirModalCarta(oponente.personagemAtivo!, false) : undefined)}
                         </div>
 
                         <div className="flex flex-col justify-start gap-[10px] h-[clamp(240px,31.4815vh,340px)] mt-[50px] min-w-0">
-
-                            <h1 className="text-[30px]">Vida: {oponente.personagemAtivo ? oponente.hpAtivo : "--"}</h1>
+                                            
+                            <h1 className="text-[clamp(25px,2.0833vw,40px)]">Vida: {oponente.personagemAtivo ? oponente.hpAtivo : "--"}</h1>
 
                             <div className="flex flex-col gap-2 max-h-[150px] overflow-y-auto inventory-scrollbar pr-2">
                                 {obterEfeitos(oponente).map((efeito, indice) => (
@@ -1833,19 +1838,19 @@ export default function TelaBatalha() {
                 </div>
 
                 {/*Barra Inferior*/}
-                <div className="flex flex-col h-[32vh]">
+                <div className="flex flex-col h-[34.5vh]">
 
-                    <div className="flex justify-between items-center pl-[45px] pr-[45px]">
+                    <div className="flex justify-start items-center pl-[5vw] gap-30">
 
-                        <h1 className="text-[45px]">{turnoDoJogador1 ? jogador1.nome : jogador2.nome}</h1>
+                        <h1 className="text-[clamp(35px,3.125vw,60px)] pt-1 pb-3.5">{turnoDoJogador1 ? jogador1.nome : jogador2.nome}</h1>
 
-                        <h1 className="text-[35px]" style={{ color : "red" }}>
+                        <h1 className="text-[40px]" style={{ color : "red" }}>
                             Derrotados {jogadorDaVez.personagensDerrotados}/3
                         </h1>
 
                     </div>
 
-                    <div className="flex justify-around items-center h-full min-w-0">
+                    <div className="flex justify-around items-start h-full min-w-0">
 
                         <div className="flex items-center gap-[2vw] overflow-x-auto min-w-0 max-w-[49.5vw] pb-3 inventory-scrollbar">
 
@@ -1861,7 +1866,7 @@ export default function TelaBatalha() {
 
                         </div>
 
-                        <div className="flex flex-col items-end gap-[25px] w-[29%] pr-[30px]">
+                        <div className="flex flex-col items-end gap-[45px] w-[29%] pr-[30px]">
 
                             <div className="flex justify-between w-full gap-[20px]">
 
@@ -1877,7 +1882,7 @@ export default function TelaBatalha() {
                                         aguardandoSubstituicao ||
                                         !jogadorDaVez.personagemAtivo
                                     }
-                                    className="w-[clamp(105px,9.4729vw,182px)] h-[clamp(45px,9.4815vh,83px)] flex items-center justify-center text-center text-[clamp(10px,1.5625vw,30px)]"
+                                    className="w-[clamp(105px,9.4729vw,182px)] h-[clamp(45px,9.4815vh,83px)] flex items-center justify-center text-center text-[clamp(10px,1.8625vw,36px)]"
                                 />
 
                                 <Botao
@@ -1893,7 +1898,7 @@ export default function TelaBatalha() {
                                         !jogadorDaVez.personagemAtivo ||
                                         !jogadorDaVez.personagemAtivo?.acao2
                                     }
-                                    className="w-[clamp(105px,9.4729vw,182px)] h-[clamp(45px,9.4815vh,83px)] flex items-center justify-center text-center text-[clamp(10px,1.5625vw,30px)]"
+                                    className="w-[clamp(105px,9.4729vw,182px)] h-[clamp(45px,9.4815vh,83px)] flex items-center justify-center text-center text-[clamp(10px,1.8625vw,36px)]"
                                 />
 
                             </div>
@@ -1910,7 +1915,7 @@ export default function TelaBatalha() {
                                     aguardandoSubstituicao ||
                                     !jogadorDaVez.personagemAtivo
                                 }
-                                className="w-[clamp(180px,16.1313vw,310px)] h-[clamp(45px,9.4815vh,83px)] flex items-center justify-center text-center text-[clamp(10px,1.5625vw,30px)]"
+                                className="w-[clamp(180px,16.1313vw,310px)] h-[clamp(45px,9.4815vh,83px)] flex items-center justify-center text-center text-[clamp(10px,1.8625vw,36px)]"
                             />
 
                         </div>
@@ -1926,7 +1931,7 @@ export default function TelaBatalha() {
                 {/*Log de Batalha*/}
                 <div className="h-[85vh] flex flex-col justify-center">
 
-                    <h1 className="text-[clamp(24px,2.5833vw,40px)] text-center">Log de Batalha</h1>
+                    <h1 className="text-[clamp(24px,3vw,58px)] text-center pb-5">Log de Batalha</h1>
 
                     <div className="h-[80%] w-[95%] mx-auto overflow-y-auto flex flex-col gap-2 px-3 py-2">
                         {logs.length === 0 ? (
