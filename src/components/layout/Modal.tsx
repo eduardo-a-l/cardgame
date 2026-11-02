@@ -3,7 +3,6 @@
 import { useEffect } from "react";
 import type { Pacote } from "@/app/loja/page"
 import { corTipo } from "@/app/loja/page"
-import { red } from "next/dist/lib/picocolors";
 
 export interface CartaModal {
     idCarta: number;

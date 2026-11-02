@@ -961,14 +961,6 @@ export default function TelaBatalha() {
         }
     }
 
-    function atualizarJogadorDaVez(jogadorAtualizado: EstadoJogador) {
-        if (turnoDoJogador1) {
-            setJogador1(jogadorAtualizado);
-        } else {
-            setJogador2(jogadorAtualizado);
-        }
-    }
-
     function salvarEstadosJogadores(atual: EstadoJogador, adversario: EstadoJogador) {
         if (turnoDoJogador1) {
             setJogador1(atual);
