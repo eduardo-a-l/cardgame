@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import type { Pacote } from "@/app/loja/page"
 import { corTipo } from "@/app/loja/page"
+import { red } from "next/dist/lib/picocolors";
 
 export interface CartaModal {
     idCarta: number;
@@ -84,7 +85,7 @@ export default function Modal({
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="modal-titulo"
-                className={`relative flex max-h-[90vh] flex-col overflow-y-auto rounded-2xl border-2 border-[#C8911A] bg-[#1B1B2F] p-6 text-white shadow-2xl sm:p-8 ${ tipo === "pacote" ? "w-full max-w-5xl p-10 sm:p-12" : "w-full max-w-md" }`}
+                className={`relative flex max-h-[90vh] flex-col overflow-y-auto rounded-2xl border-2 border-[#C8911A] bg-[#1B1B2F] p-6 text-white shadow-2xl sm:p-8 ${ tipo === "pacote" ? "w-full max-w-5xl p-10 sm:p-12" : tipo === "carta" ? (carta?.tipo === "Personagem" ? "w-full max-w-[600px]" : "w-full max-w-[450px]") : "w-full max-w-md" }`}
             >
                 <button
                     type="button"
@@ -181,18 +182,26 @@ export default function Modal({
                     <div className="space-y-3 text-center text-[clamp(18px,1.5vw,29px)]">
 
                         <p>Tipo: {carta.tipo}</p>
-                        <p>Raridade: {carta.raridade}</p>
+                        <p>
+                            Raridade:
+                            <span style={{ color: corTipo(carta.raridade) }}> {carta.raridade}</span> 
+                        </p>
 
                         {carta.vida !== undefined && (
-                            <p>Vida: {carta.vida}</p>
+                            <p style={{ color: "red" }}>Vida: {carta.vida}</p>
                         )}
 
                         {carta.acao1 && (
-                            <p>{carta.tipo == "Personagem" ? "Ação 1" : "Efeito"}: {carta.acao1}</p>
+                            <p>
+                                <span className="text_dinheiro">[{carta.tipo == "Personagem" ? "Ação 1" : "Efeito"}] </span>
+                                : {carta.acao1}
+                            </p>
                         )}
 
                         {carta.acao2 && (
-                            <p>Ação 2: {carta.acao2}</p>
+                            <p>
+                                <span className="text_dinheiro">[Ação 2] </span>
+                                : {carta.acao2}</p>
                         )}
 
                     </div>

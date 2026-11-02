@@ -89,6 +89,12 @@ function criarJogador(
         bonusCritProx: false,
 
         primeiroTurno: true,
+
+        pularDecrementoBuffDano: false,
+        pularDecrementoBuffDefesa: false,
+        pularDecrementoFocusLens: false,
+        pularDecrementoSmokescreen: false,
+        pularDecrementoTurnosSemAcao: false
     };
 }
 
@@ -367,13 +373,18 @@ export default function TelaBatalha() {
         }
 
         // Decrementa a duração do buff de dano
-        const novaDuracaoDano = Math.max(0, atual.buffDano.duracao - 1);
+        const novaDuracaoDano = atual.pularDecrementoBuffDano
+            ? atual.buffDano.duracao
+            : Math.max(0, atual.buffDano.duracao - 1);
 
         // Decrementa a duração do buff de defesa
-        const novaDuracaoDefesa = Math.max(0, atual.buffDefesa.duracao - 1);
+        const novaDuracaoDefesa = atual.pularDecrementoBuffDefesa
+            ? atual.buffDefesa.duracao
+            : Math.max(0, atual.buffDefesa.duracao - 1);
 
-        // Decrementa os turnos sem ação
-        const novosTurnosSemAcao = Math.max(0, atual.turnosSemAcao - 1);
+        const novosTurnosSemAcao = atual.pularDecrementoTurnosSemAcao
+            ? atual.turnosSemAcao
+            : Math.max(0, atual.turnosSemAcao - 1);
 
         atual = {
             ...atual,
@@ -395,9 +406,20 @@ export default function TelaBatalha() {
                     ? false
                     : atual.refletirDano,
 
-            duracaoFocusLens: Math.max(0, atual.duracaoFocusLens - 1),
+            duracaoFocusLens: atual.pularDecrementoFocusLens
+                ? atual.duracaoFocusLens
+                : Math.max(0, atual.duracaoFocusLens - 1),
 
-            duracaoSmokescreen: Math.max(0, atual.duracaoSmokescreen - 1)
+            duracaoSmokescreen: atual.pularDecrementoSmokescreen
+                ? atual.duracaoSmokescreen
+                : Math.max(0, atual.duracaoSmokescreen - 1),
+
+            // As marcações são consumidas neste início de turno
+            pularDecrementoBuffDano: false,
+            pularDecrementoBuffDefesa: false,
+            pularDecrementoFocusLens: false,
+            pularDecrementoSmokescreen: false,
+            pularDecrementoTurnosSemAcao: false
         };
 
         // Life Draining Flower
@@ -478,7 +500,7 @@ export default function TelaBatalha() {
             nome: carta.nome ?? "Carta",
             raridade: carta.raridade ?? "Comum",
             tipo: carta.tipo,
-            vida: carta.vida,
+            vida: carta.vida ?? undefined,
             acao1: carta.acao1,
             acao2: carta.acao2
         });
@@ -580,7 +602,8 @@ export default function TelaBatalha() {
                             buffDano: {
                                 valor: 8,
                                 duracao: 3
-                            }
+                            },
+                            pularDecrementoBuffDano: true
                         };
 
                         registrarLog("+8 Dano de ações ofensivas por 3 turnos");
@@ -593,7 +616,8 @@ export default function TelaBatalha() {
                             buffDefesa: {
                                 valor: 5,
                                 duracao: 4
-                            }
+                            },
+                            pularDecrementoBuffDefesa: true
                         };
 
                         registrarLog("-5 Dano recebido por 4 turnos");
@@ -606,7 +630,8 @@ export default function TelaBatalha() {
                             buffDefesa: {
                                 valor: 8,
                                 duracao: 6
-                            }
+                            },
+                            pularDecrementoBuffDefesa: true
                         };
 
                         registrarLog("-8 Dano recebido por 6 turnos");
@@ -633,7 +658,8 @@ export default function TelaBatalha() {
                             buffDano: {
                                 valor: 15,
                                 duracao: 5
-                            }
+                            },
+                            pularDecrementoBuffDano: true
                         };
 
                         registrarLog("+15 Dano de ações ofensivas por 5 turnos");
@@ -646,7 +672,8 @@ export default function TelaBatalha() {
                             buffDefesa: {
                                 valor: 15,
                                 duracao: 5
-                            }
+                            },
+                            pularDecrementoBuffDefesa: true
                         };
 
                         registrarLog("-15 Dano recebido por 5 turnos");
@@ -656,7 +683,8 @@ export default function TelaBatalha() {
                     case "Focus Lens": {
                         atual = {
                             ...atual,
-                            duracaoFocusLens: 7
+                            duracaoFocusLens: 7,
+                            pularDecrementoFocusLens: true
                         };
 
                         registrarLog(
@@ -668,7 +696,8 @@ export default function TelaBatalha() {
                     case "Smokescreen": {
                         adversarioAtualizado = {
                             ...adversarioAtualizado,
-                            duracaoSmokescreen: 5
+                            duracaoSmokescreen: 5,
+                            pularDecrementoSmokescreen: true
                         };
 
                         registrarLog(
@@ -815,7 +844,7 @@ export default function TelaBatalha() {
                     : atual.hpColetadoOrb + 10;
 
             registrarLog(
-                `Devouring Orb: Sugou ${adversario.hpAtivo} do oponente (${hpColetado}/75)`
+                `Devouring Orb: Sugou ${hpColetado - atual.hpColetadoOrb} do oponente (${hpColetado}/75)`
             );
 
             adversario = {
@@ -970,7 +999,12 @@ export default function TelaBatalha() {
             ignorarDefesa: false,
             ignorarDefesaProx: false,
             bonusChanceCrit: 0,
-            bonusCritProx: false
+            bonusCritProx: false,
+            pularDecrementoBuffDano: false,
+            pularDecrementoBuffDefesa: false,
+            pularDecrementoFocusLens: false,
+            pularDecrementoSmokescreen: false,
+            pularDecrementoTurnosSemAcao: false
         };
     }
 
@@ -1273,7 +1307,8 @@ export default function TelaBatalha() {
                     atual = {
                         ...atual,
                         turnosSemAcao: 2,
-                        refletirDano: true
+                        refletirDano: true,
+                        pularDecrementoTurnosSemAcao: true
                     };
 
                     registrarLog(
@@ -1387,19 +1422,56 @@ export default function TelaBatalha() {
         let substituicaoPendente = false;
         let finalizada = false;
         let vencedorAtual: number | null = null;
-        let jogadorMorreuPorReflexao = false;
+
+        let atualAtingiuVitoria = false;
+        let oponenteAtingiuVitoria = false;
+        let vencedorPorReflexao: number | null = null;
 
         if (adversario.refletirDano && danoFinal > 0) {
-            const danoRefletido = Math.floor(danoFinal * 0.5);
+            const danoBaseRefletido = Math.floor(danoFinal * 0.5);
+
+            let bonusOfensivoDefensor = adversario.buffDano.valor;
+
+            // adiciona apenas a metade que 'cortou fora'
+            if (campoAtivo?.nome === "Fiery Field") {
+                bonusOfensivoDefensor += 5;
+            }
+
+            if (adversario.itensAtivos.sharpClaws) {
+                const vidaBaseAtacante = atual.personagemAtivo?.vida ?? 100;
+
+                if (vidaBaseAtacante <= 100) {
+                    bonusOfensivoDefensor += 8;
+                }
+            }
+
+            let reducaoDefensivaAtacante = atual.buffDefesa.valor;
+
+            // adiciona apenas a metade que 'cortou fora'
+            if (campoAtivo?.nome === "Tidal Seas") {
+                const vidaBaseAtacante = atual.personagemAtivo?.vida ?? 100;
+
+                if (atual.hpAtivo < vidaBaseAtacante / 2) {
+                    reducaoDefensivaAtacante += 5;
+                }
+            }
+
+            let danoRefletido = Math.max(
+                0,
+                danoBaseRefletido +
+                bonusOfensivoDefensor -
+                reducaoDefensivaAtacante
+            );
+
+            if (atual.itensAtivos.rigidShell && danoRefletido >= 15) {
+                danoRefletido -= 6;
+                registrarLog("Rigid Shell: Dano refletido reduzido em 6");
+            }
 
             atual = {
                 ...atual,
                 hpAtivo: atual.hpAtivo - danoRefletido
             };
-
-            if (atual.hpAtivo <= 0 && atual.personagemAtivo !== null) {
-                jogadorMorreuPorReflexao = true;
-            }
 
             registrarLog(
                 `Contra-ataque. ${atual.nome} recebeu ${danoRefletido} de volta`
@@ -1414,8 +1486,8 @@ export default function TelaBatalha() {
             morteJogador.logs.forEach(registrarLog);
 
             if (morteJogador.finalizada) {
-                finalizada = true;
-                vencedorAtual = morteJogador.vencedorId;
+                oponenteAtingiuVitoria = true;
+                vencedorPorReflexao = morteJogador.vencedorId;
             }
 
             if (morteJogador.aguardandoSubstituicao) {
@@ -1440,10 +1512,6 @@ export default function TelaBatalha() {
             `${personagem.nome} usou ${nomeAcao}: ${danoFinal} dano${logCura}`
         );
 
-        const oponenteMorreuNesteAtaque =
-            adversario.personagemAtivo !== null &&
-            adversario.hpAtivo <= 0;
-
         // Verifica a derrota do oponente.
         const morteOponente = resolverMorteOponente(atual, adversario);
 
@@ -1452,18 +1520,17 @@ export default function TelaBatalha() {
 
         morteOponente.logs.forEach(registrarLog);
 
-        if (jogadorMorreuPorReflexao && oponenteMorreuNesteAtaque) {
-            finalizada = true;
-            vencedorAtual = atual.idUsuario;
-            substituicaoPendente = false;
-
-            registrarLog(
-                `Morte simultânea! ${atual.nome} venceu por derrotar o personagem adversário no mesmo ataque.`
-            );
+        if (morteOponente.finalizada) {
+            atualAtingiuVitoria = true;
         }
-        else if (morteOponente.finalizada) {
+
+        if (atualAtingiuVitoria || oponenteAtingiuVitoria) {
             finalizada = true;
-            vencedorAtual = morteOponente.vencedorId;
+
+            // Se ambos atingiram a condição de vitória, atual vence.
+            vencedorAtual = atualAtingiuVitoria
+                ? morteOponente.vencedorId
+                : vencedorPorReflexao;
         }
 
         // Verifica novamente a morte do jogador, caso ainda tenha personagem.
@@ -1486,7 +1553,7 @@ export default function TelaBatalha() {
         }
 
         // Atualiza os estados e encerra a batalha, se necessário.
-        if (finalizada && vencedorAtual) {
+        if (finalizada && vencedorAtual !== null) {
             salvarEstadosJogadores(atual, adversario);
             finalizarBatalha(vencedorAtual);
             return;
@@ -1882,7 +1949,7 @@ export default function TelaBatalha() {
                                         aguardandoSubstituicao ||
                                         !jogadorDaVez.personagemAtivo
                                     }
-                                    className="w-[clamp(105px,9.4729vw,182px)] h-[clamp(45px,9.4815vh,83px)] flex items-center justify-center text-center text-[clamp(10px,1.8625vw,36px)]"
+                                    className="botao_batalha w-[clamp(105px,9.4729vw,182px)] h-[clamp(45px,9.4815vh,83px)] flex items-center justify-center text-center text-[clamp(10px,1.8625vw,36px)]"
                                 />
 
                                 <Botao
@@ -1898,7 +1965,7 @@ export default function TelaBatalha() {
                                         !jogadorDaVez.personagemAtivo ||
                                         !jogadorDaVez.personagemAtivo?.acao2
                                     }
-                                    className="w-[clamp(105px,9.4729vw,182px)] h-[clamp(45px,9.4815vh,83px)] flex items-center justify-center text-center text-[clamp(10px,1.8625vw,36px)]"
+                                    className="botao_batalha w-[clamp(105px,9.4729vw,182px)] h-[clamp(45px,9.4815vh,83px)] flex items-center justify-center text-center text-[clamp(10px,1.8625vw,36px)]"
                                 />
 
                             </div>
@@ -1915,7 +1982,7 @@ export default function TelaBatalha() {
                                     aguardandoSubstituicao ||
                                     !jogadorDaVez.personagemAtivo
                                 }
-                                className="w-[clamp(180px,16.1313vw,310px)] h-[clamp(45px,9.4815vh,83px)] flex items-center justify-center text-center text-[clamp(10px,1.8625vw,36px)]"
+                                className="botao_batalha w-[clamp(180px,16.1313vw,310px)] h-[clamp(45px,9.4815vh,83px)] flex items-center justify-center text-center text-[clamp(10px,1.8625vw,36px)]"
                             />
 
                         </div>
@@ -1961,7 +2028,7 @@ export default function TelaBatalha() {
                         borda="border-[5px]"
                         onClick={desistir}
                         disabled={carregando || batalhaFinalizada}
-                        className="w-[clamp(200px,20.625vw,396px)] h-[clamp(65px,11.2593vh,121px)] flex items-center justify-center text-center text-[clamp(30px,3.6042vw,70px)]"
+                        className="botao_batalha w-[clamp(200px,20.625vw,396px)] h-[clamp(65px,11.2593vh,121px)] flex items-center justify-center text-center text-[clamp(30px,3.6042vw,70px)]"
                     />
 
                 </div>
@@ -1971,29 +2038,30 @@ export default function TelaBatalha() {
             {/* Overlay de troca de turno */}
             {mostrarOverlayTurno && !batalhaFinalizada && (
 
-                <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/75 p-4">
+                <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/85 p-4">
 
-                    <div className="flex w-full max-w-lg flex-col items-center rounded-2xl border-2 border-[#C8911A] bg-[#1B1B2F] p-10 text-center text-white shadow-2xl">
+                    <div className="flex w-full max-w-xl flex-col items-center rounded-2xl border-8 border-[#C8911A] bg-[#1B1B2F] p-10 text-center text-white shadow-2xl">
 
-                        <h1 className="mb-4 text-[clamp(28px,2.5vw,48px)] font-bold text-[#C8911A]">
+                        <h1 className="mb-13 text-[clamp(28px,3.5vw,67px)] font-bold text_dinheiro">
                             Troca de turno
                         </h1>
 
-                        <p className="mb-2 text-[clamp(20px,1.5vw,29px)]">
+                        <p className="mb-2 text-[clamp(20px,2.5vw,48px)]">
                             É a vez de:
                         </p>
 
-                        <h2 className="mb-8 text-[clamp(30px,2vw,40px)] font-bold">
+                        <h2 className="mt-4 mb-13 text-[clamp(30px,4vw,77px)] font-bold">
                             {jogadorDaVez.nome}
                         </h2>
 
-                        <button
+                        <Botao
+                            texto="Iniciar turno"      
+                            raio={20}
+                            borda="border-[5px]"
+                            onClick={() => iniciarTurno()}
                             type="button"
-                            onClick={iniciarTurno}
-                            className="rounded-xl border-2 border-[#C8911A] bg-[#21366B] px-10 py-4 text-xl font-semibold text-white transition hover:bg-[#2D4785] active:scale-95"
-                        >
-                            Iniciar turno
-                        </button>
+                            className="w-[clamp(180px,16.1313vw,310px)] h-[clamp(45px,9.4815vh,83px)] flex items-center justify-center text-center text-[clamp(10px,1.8625vw,36px)] loja-hover mt-5 mb-5"
+                        />
 
                     </div>
 

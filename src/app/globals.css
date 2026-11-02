@@ -158,6 +158,12 @@ h2, h1, p {
   color: #e5ad00;
 }
 
+.botao_batalha:disabled {
+  background-color: #1B1B2F !important;
+  border-color: #686868 !important;
+  cursor: default;
+}
+
 @custom-variant medium (@media (min-height: 768px));
 @custom-variant tall (@media (min-height: 900px));
 @custom-variant pretty-wide (@media (min-width: 1180px));

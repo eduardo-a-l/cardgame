@@ -35,6 +35,12 @@ export interface EstadoJogador {
     bonusCritProx: boolean;
 
     primeiroTurno: boolean;
+
+    pularDecrementoBuffDano: boolean;
+    pularDecrementoBuffDefesa: boolean;
+    pularDecrementoFocusLens: boolean;
+    pularDecrementoSmokescreen: boolean;
+    pularDecrementoTurnosSemAcao: boolean;
 }
 
 export interface ItensAtivos {

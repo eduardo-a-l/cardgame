@@ -20,6 +20,10 @@ export function Baralho({
   style,
   ...props
 }: BotaoProps) {
+  let tamanho = "leading-[1]"
+  if ((texto?.length ?? 10) >= 13) {
+    tamanho += " text-[clamp(32px,2vw,38px)]"
+  }
   return (
     <button
       style={{
@@ -32,7 +36,7 @@ export function Baralho({
       className={`flex items-center justify-center px-6 py-3 border-[5px] text-[clamp(32px,2.708vw,52px)] ${className} `}
       {...props}
     >
-      {texto && <span>{texto}</span>}
+      {texto && <span className={tamanho}>{texto}</span>}
     </button>
   );
 }
