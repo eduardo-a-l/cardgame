@@ -81,6 +81,16 @@ function SelecionarBaralhoConteudo() {
         `/selecionar-baralho?p1=${p1}&p2=${p2}&deck1=${selecionado}`
       );
     } else {
+      sessionStorage.setItem(
+        "configuracaoBatalha",
+        JSON.stringify({
+            p1,
+            p2,
+            deck1,
+            selecionado
+        })
+      );
+
       router.push("/batalha");
     }
   }

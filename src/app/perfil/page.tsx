@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Botao } from "@/components/ui/Botao";
 import { Icone } from "@/components/ui/Icone";
 import { FotoPerfil } from "@/components/ui/FotoPerfil";
+import Modal from "@/components/layout/Modal";
 
 interface Usuario {
     idUsuario: number;
@@ -43,6 +44,9 @@ function PerfilConteudo() {
     const [fotoAtualizada, setFotoAtualizada] = useState(0);
     const [ehProprioUsuario, setEhProprioUsuario] = useState(false);
     const [erroServidor, setErroServidor] = useState(false);
+	const [tituloErro, setTituloErro] = useState<string>("");
+	const [mostrarErro, setMostrarErro] = useState<boolean>(false);
+    const [tipoModal, setTipoModal] = useState<"erro"|"sucesso">("erro");
 
     useEffect(() => {
         async function carregarDados() {
@@ -148,10 +152,18 @@ function PerfilConteudo() {
                 pinBatalha: Number(input)
             });
 
+            setErro("PIN de Batalha atualizado com sucesso.");
+            setTituloErro("PIN atualizado!")
+            setMostrarErro(true)
+            setTipoModal("sucesso")
+
             setInput("");
         } catch (erro) {
             console.error(erro);
             setErro("Não foi possível atualizar o PIN.");
+            setTituloErro("Erro no PIN");
+            setMostrarErro(true)
+            setTipoModal("erro")
         } finally {
             setSalvandoPin(false);
         }
@@ -188,12 +200,20 @@ function PerfilConteudo() {
 
             setFotoAtualizada((valor) => valor + 1);
 
+            setErro("Foto de perfil atualizada com sucesso.");
+            setTituloErro("Foto atualizada!")
+            setMostrarErro(true)
+            setTipoModal("sucesso")
+
             window.dispatchEvent(
                 new Event("usuarioAtualizado")
             );
         } catch (erro) {
             console.error(erro);
             setErro("Não foi possível atualizar a foto de perfil.");
+            setTituloErro("Erro na Foto")
+            setMostrarErro(true)
+            setTipoModal("erro")
         } finally {
             setEnviandoFoto(false);
             e.target.value = "";
@@ -373,11 +393,13 @@ function PerfilConteudo() {
 
                 </div>
 
-                {erro && (
-                    <p className="text-red-400 text-center mt-10">
-                        {erro}
-                    </p>
-                )}
+                <Modal
+                    aberto={mostrarErro}
+                    titulo={tituloErro}
+                    mensagem={erro}
+                    tipo={tipoModal}
+                    onFechar={() => setMostrarErro(false)}
+                />
 
                 <div className="flex flex-col items-center justify-center mt-30 w-full">
 

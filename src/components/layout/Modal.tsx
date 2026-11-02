@@ -8,15 +8,20 @@ export interface CartaModal {
     idCarta: number;
     nome: string;
     raridade: string;
+    tipo?: string;
+    vida?: number;
+    acao1?: string;
+    acao2?: string;
 }
 
 interface ModalProps {
     aberto: boolean;
     titulo: string;
     mensagem?: string;
-    tipo: "erro" | "sucesso" | "pacote" | "detalhesPacote";
+    tipo: "erro" | "sucesso" | "pacote" | "detalhesPacote" | "carta";
     cartas?: CartaModal[];
     pacote?: Pacote;
+    carta?: CartaModal;
     onFechar: () => void;
     onConfirmar?: () => void;
     mostrarConfirmacao?: boolean;
@@ -29,6 +34,7 @@ export default function Modal({
     tipo,
     cartas = [],
     pacote,
+    carta,
     onFechar,
     onConfirmar,
     mostrarConfirmacao = false
@@ -78,7 +84,7 @@ export default function Modal({
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="modal-titulo"
-                className={`relative flex max-h-[90vh] flex-col overflow-y-auto rounded-2xl border-2 border-[#C8911A] bg-[#1B1B2F] p-6 text-white shadow-2xl sm:p-8 ${ tipo === "pacote" ? "w-full max-w-5xl p-10 sm:p-12" : "w-full max-w-md" }`}
+                className={`relative flex max-h-[90vh] flex-col overflow-y-auto rounded-2xl border-2 border-[#C8911A] bg-[#1B1B2F] p-6 text-white shadow-2xl sm:p-8 ${ tipo === "pacote" ? "w-full max-w-5xl p-10 sm:p-12" : tipo === "carta" ? (carta?.tipo === "Personagem" ? "w-full max-w-[600px]" : "w-full max-w-[450px]") : "w-full max-w-md" }`}
             >
                 <button
                     type="button"
@@ -170,12 +176,44 @@ export default function Modal({
                     </div>
                 )}
 
+                {tipo === "carta" && carta && (
+
+                    <div className="space-y-3 text-center text-[clamp(18px,1.5vw,29px)]">
+
+                        <p>Tipo: {carta.tipo}</p>
+                        <p>
+                            Raridade:
+                            <span style={{ color: corTipo(carta.raridade) }}> {carta.raridade}</span> 
+                        </p>
+
+                        {carta.vida !== undefined && (
+                            <p style={{ color: "red" }}>Vida: {carta.vida}</p>
+                        )}
+
+                        {carta.acao1 && (
+                            <p>
+                                <span className="text_dinheiro">[{carta.tipo == "Personagem" ? "Ação 1" : "Efeito"}] </span>
+                                : {carta.acao1}
+                            </p>
+                        )}
+
+                        {carta.acao2 && (
+                            <p>
+                                <span className="text_dinheiro">[Ação 2] </span>
+                                : {carta.acao2}</p>
+                        )}
+
+                    </div>
+                )}
+
                 <button
                     type="button"
                     onClick={mostrarConfirmacao ? onConfirmar : onFechar}
                     className="mx-auto mt-10 min-w-48 rounded-xl border-2 border-[#C8911A] bg-[#21366B] px-10 py-4 font-semibold text-white transition hover:bg-[#2D4785] active:scale-95"
                 >
-                    {tipo === "pacote" ? "Continuar" : mostrarConfirmacao ? "Confirmar" : "Entendi"}
+                    {tipo === "pacote"                      ? "Continuar"  : 
+                     tipo === "carta" && mostrarConfirmacao ? "Usar Carta" :
+                     mostrarConfirmacao                     ? "Confirmar"  : "Entendi"}
                 </button>
             </div>
         </div>
