@@ -579,18 +579,18 @@ function PerfilConteudo() {
                                         {conquista.dificuldade}
                                     </span>
 
-                                    <h2 className="text-[13px] text-gray-300 h-[30px]">
-                                        {conquista.descricao}
-                                    </h2>
+                                    <div className="flex flex-col gap-2">
+                                        <p className="text-sm">
+                                            {conquista.descricao}
+                                        </p>
 
-                                    {conquista.desbloqueada && conquista.dataDesbloqueio && (
-                                        <span className="mt-1 text-[11px] text-gray-400">
-                                            Desbloqueada em{" "}
-                                            {new Date(
-                                                conquista.dataDesbloqueio
-                                            ).toLocaleDateString("pt-BR")}
-                                        </span>
-                                    )}
+                                        {conquista.desbloqueada && conquista.dataDesbloqueio && (
+                                            <span className="text-xs text-gray-400">
+                                                Desbloqueada em:{" "}
+                                                {new Date(conquista.dataDesbloqueio).toLocaleDateString("pt-BR")}
+                                            </span>
+                                        )}
+                                    </div>
                                 </div>
                             );
                         })}
