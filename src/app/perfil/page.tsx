@@ -8,6 +8,12 @@ import { Icone } from "@/components/ui/Icone";
 import { FotoPerfil } from "@/components/ui/FotoPerfil";
 import Modal from "@/components/layout/Modal";
 
+import {
+    conquistas as catalogoConquistas,
+    obterConquistasLocais,
+    type ConquistaDesbloqueada
+} from "@/lib/conquistas";
+
 interface Usuario {
     idUsuario: number;
     nomeUsuario: string;
@@ -29,6 +35,58 @@ interface Conquista {
     dataDesbloqueio: string | null;
 }
 
+interface ConquistaAPI extends Conquista {}
+
+function combinarConquistas(
+    conquistasAPI: ConquistaAPI[],
+    conquistasLocais: ConquistaDesbloqueada[]
+): Conquista[] {
+    const apiPorCodigo = new Map(
+        conquistasAPI.map(conquista => [
+            conquista.codigo,
+            conquista
+        ])
+    );
+
+    const localPorCodigo = new Map(
+        conquistasLocais.map(conquista => [
+            conquista.codigo,
+            conquista
+        ])
+    );
+
+    const resultado = catalogoConquistas.map((modelo, indice) => {
+        const conquistaAPI = apiPorCodigo.get(modelo.codigo);
+        const conquistaLocal = localPorCodigo.get(modelo.codigo);
+
+        return {
+            idConquista: conquistaAPI?.idConquista ?? -(indice + 1),
+            codigo: modelo.codigo,
+            nome: conquistaAPI?.nome ?? modelo.nome,
+            descricao: conquistaAPI?.descricao ?? modelo.descricao,
+            dificuldade: conquistaAPI?.dificuldade ?? modelo.dificuldade,
+            icone: conquistaAPI?.icone ?? modelo.icone,
+            desbloqueada: Boolean(
+                conquistaAPI?.desbloqueada || conquistaLocal
+            ),
+            dataDesbloqueio:
+                conquistaAPI?.dataDesbloqueio ??
+                conquistaLocal?.dataDesbloqueio ??
+                null
+        };
+    });
+
+    const codigosCatalogo = new Set(
+        catalogoConquistas.map(conquista => conquista.codigo)
+    );
+
+    const conquistasExtrasAPI = conquistasAPI.filter(
+        conquista => !codigosCatalogo.has(conquista.codigo)
+    );
+
+    return [...resultado, ...conquistasExtrasAPI];
+}
+
 function PerfilConteudo() {
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -44,15 +102,32 @@ function PerfilConteudo() {
     const [fotoAtualizada, setFotoAtualizada] = useState(0);
     const [ehProprioUsuario, setEhProprioUsuario] = useState(false);
     const [erroServidor, setErroServidor] = useState(false);
-	const [tituloErro, setTituloErro] = useState<string>("");
-	const [mostrarErro, setMostrarErro] = useState<boolean>(false);
-    const [tipoModal, setTipoModal] = useState<"erro"|"sucesso">("erro");
+    const [tituloErro, setTituloErro] = useState<string>("");
+    const [mostrarErro, setMostrarErro] = useState<boolean>(false);
+    const [tipoModal, setTipoModal] = useState<"erro" | "sucesso">("erro");
 
     useEffect(() => {
+        let cancelado = false;
+        let idAlvoAtual: number | null = null;
+        let ehDonoAtual = false;
+        let conquistasAPIAtuais: ConquistaAPI[] = [];
+
+        function atualizarConquistasLocais() {
+            if (!ehDonoAtual || idAlvoAtual === null) return;
+
+            const locais = obterConquistasLocais(idAlvoAtual);
+
+            setConquistas(
+                combinarConquistas(conquistasAPIAtuais, locais)
+            );
+        }
+
         async function carregarDados() {
             try {
                 const usuarioSalvo = localStorage.getItem("usuario");
-                const usuarioLocal = usuarioSalvo ? JSON.parse(usuarioSalvo) : null;
+                const usuarioLocal = usuarioSalvo
+                    ? JSON.parse(usuarioSalvo)
+                    : null;
 
                 let idAlvo: number | null = null;
 
@@ -65,7 +140,17 @@ function PerfilConteudo() {
                     return;
                 }
 
-                const ehDono = usuarioLocal !== null && usuarioLocal.idUsuario === idAlvo;
+                if (!Number.isFinite(idAlvo) || idAlvo <= 0) {
+                    throw new Error("ID de usuário inválido.");
+                }
+
+                const ehDono =
+                    usuarioLocal !== null &&
+                    usuarioLocal.idUsuario === idAlvo;
+
+                idAlvoAtual = idAlvo;
+                ehDonoAtual = ehDono;
+
                 setEhProprioUsuario(ehDono);
 
                 const responseUsuario = await fetch(
@@ -77,6 +162,9 @@ function PerfilConteudo() {
                 }
 
                 const dadosUsuario: Usuario = await responseUsuario.json();
+
+                if (cancelado) return;
+
                 setUsuario(dadosUsuario);
 
                 const responseConquistas = await fetch(
@@ -84,19 +172,61 @@ function PerfilConteudo() {
                 );
 
                 if (responseConquistas.ok) {
-                    const dadosConquistas: Conquista[] = await responseConquistas.json();
-                    setConquistas(dadosConquistas);
+                    conquistasAPIAtuais = await responseConquistas.json();
+
+                    if (!Array.isArray(conquistasAPIAtuais)) {
+                        conquistasAPIAtuais = [];
+                    }
                 }
+
+                if (cancelado) return;
+
+                const conquistasLocais = ehDono
+                    ? obterConquistasLocais(idAlvo)
+                    : [];
+
+                setConquistas(
+                    combinarConquistas(
+                        conquistasAPIAtuais,
+                        conquistasLocais
+                    )
+                );
 
             } catch (erro) {
                 console.error(erro);
                 setErroServidor(true);
             } finally {
-                setCarregando(false);
+                if (!cancelado) {
+                    setCarregando(false);
+                }
             }
         }
 
+        window.addEventListener(
+            "conquistaDesbloqueada",
+            atualizarConquistasLocais
+        );
+
+        window.addEventListener(
+            "storage",
+            atualizarConquistasLocais
+        );
+
         carregarDados();
+
+        return () => {
+            cancelado = true;
+
+            window.removeEventListener(
+                "conquistaDesbloqueada",
+                atualizarConquistasLocais
+            );
+
+            window.removeEventListener(
+                "storage",
+                atualizarConquistasLocais
+            );
+        };
     }, [router, idParam]);
 
     if (erroServidor) {
@@ -111,9 +241,14 @@ function PerfilConteudo() {
                         corDaBorda="transparent"
                         corDoTexto="#FFFFFF"
                         className="px-0 py-0 text-3xl"
-                        onClick={() => idParam ? router.back() : router.push("/")}
+                        onClick={() =>
+                            idParam
+                                ? router.back()
+                                : router.push("/")
+                        }
                     />
                 </div>
+
                 <p className="text-white text-2xl text-center">
                     Não foi possível conectar-se com o servidor
                 </p>
@@ -153,17 +288,18 @@ function PerfilConteudo() {
             });
 
             setErro("PIN de Batalha atualizado com sucesso.");
-            setTituloErro("PIN atualizado!")
-            setMostrarErro(true)
-            setTipoModal("sucesso")
+            setTituloErro("PIN atualizado!");
+            setMostrarErro(true);
+            setTipoModal("sucesso");
 
             setInput("");
         } catch (erro) {
             console.error(erro);
+
             setErro("Não foi possível atualizar o PIN.");
             setTituloErro("Erro no PIN");
-            setMostrarErro(true)
-            setTipoModal("erro")
+            setMostrarErro(true);
+            setTipoModal("erro");
         } finally {
             setSalvandoPin(false);
         }
@@ -198,22 +334,23 @@ function PerfilConteudo() {
                 throw new Error("Erro ao atualizar foto");
             }
 
-            setFotoAtualizada((valor) => valor + 1);
+            setFotoAtualizada(valor => valor + 1);
 
             setErro("Foto de perfil atualizada com sucesso.");
-            setTituloErro("Foto atualizada!")
-            setMostrarErro(true)
-            setTipoModal("sucesso")
+            setTituloErro("Foto atualizada!");
+            setMostrarErro(true);
+            setTipoModal("sucesso");
 
             window.dispatchEvent(
                 new Event("usuarioAtualizado")
             );
         } catch (erro) {
             console.error(erro);
+
             setErro("Não foi possível atualizar a foto de perfil.");
-            setTituloErro("Erro na Foto")
-            setMostrarErro(true)
-            setTipoModal("erro")
+            setTituloErro("Erro na Foto");
+            setMostrarErro(true);
+            setTipoModal("erro");
         } finally {
             setEnviandoFoto(false);
             e.target.value = "";
@@ -236,17 +373,21 @@ function PerfilConteudo() {
 
     function getCorDificuldade(dificuldade: string) {
         switch (dificuldade) {
-            case "Fácil": return "text-green-400";
-            case "Médio": return "text-yellow-400";
-            case "Difícil": return "text-orange-400";
-            case "Difícil+": return "text-red-500";
-            default: return "text-gray-400";
+            case "Fácil":
+                return "text-green-400";
+            case "Médio":
+                return "text-yellow-400";
+            case "Difícil":
+                return "text-orange-400";
+            case "Difícil+":
+                return "text-red-500";
+            default:
+                return "text-gray-400";
         }
     }
 
     return (
         <main className="relative min-h-screen bg-[#1B1B2F] flex items-center justify-center w-full">
-
             <div className="absolute top-10 left-10 z-10">
                 <Botao
                     texto="Voltar"
@@ -256,28 +397,27 @@ function PerfilConteudo() {
                     corDaBorda="transparent"
                     corDoTexto="#FFFFFF"
                     className="px-0 py-0 text-3xl"
-                    onClick={() => idParam ? router.back() : router.push("/")}
+                    onClick={() =>
+                        idParam
+                            ? router.back()
+                            : router.push("/")
+                    }
                 />
             </div>
 
             <div className="w-[97.5vw] xl:w-[92.5vw] 2xl:w-[87.5vw] mt-12 overflow-y-auto inventory-scrollbar flex flex-col">
-
                 <div className="flex w-full justify-center mt-[100px] gap-[clamp(25px,13.02vw,250px)]">
-
                     <div
                         className="flex flex-col items-center gap-6"
                         style={{ width: "31.25vw" }}
                     >
-
                         <div className="flex flex-col items-center gap-3 mb-13">
-
                             {ehProprioUsuario ? (
                                 <>
                                     <label
                                         htmlFor="fotoPerfil"
                                         className="cursor-pointer flex flex-col items-center"
                                     >
-
                                         <FotoPerfil
                                             idUsuario={usuario.idUsuario}
                                             tamanho={120}
@@ -289,7 +429,6 @@ function PerfilConteudo() {
                                                 ? "Enviando..."
                                                 : "Mudar foto de perfil"}
                                         </span>
-
                                     </label>
 
                                     <input
@@ -311,17 +450,16 @@ function PerfilConteudo() {
                             <h1 className="text-[clamp(40px,4vw,77px)] text-white">
                                 {usuario.nomeUsuario}
                             </h1>
-
                         </div>
 
                         {ehProprioUsuario && (
                             <>
                                 <h2 className="text-[clamp(28px,2.083vw,40px)]">
-                                    PIN de Batalha Atual: {String(usuario.pinBatalha).padStart(4, "0")}
+                                    PIN de Batalha Atual:{" "}
+                                    {String(usuario.pinBatalha).padStart(4, "0")}
                                 </h2>
 
                                 <div className="flex flex-col mb-13">
-
                                     <label
                                         htmlFor="pinBatalha"
                                         className="text-[clamp(35px,2.760vw,53px)] text-white"
@@ -333,7 +471,7 @@ function PerfilConteudo() {
                                         type="number"
                                         min="0"
                                         max="9999"
-                                        onKeyDown={(e) => {
+                                        onKeyDown={e => {
                                             if (
                                                 e.key === "e" ||
                                                 e.key === "E" ||
@@ -346,7 +484,7 @@ function PerfilConteudo() {
                                         name="pinBatalha"
                                         id="pinBatalha"
                                         value={input}
-                                        onChange={(e) => {
+                                        onChange={e => {
                                             if (e.target.value.length <= 4) {
                                                 setInput(e.target.value);
                                             }
@@ -354,7 +492,6 @@ function PerfilConteudo() {
                                         placeholder="Digite o novo PIN"
                                         className="bg-[#262647] text-white rounded-[5px] text-[clamp(21px,1.5vw,30px)] px-[clamp(22px,1.615vw,31px)] py-[clamp(10px,0.677vw,13px)] border border-indigo-500 focus:border-[#C8911A] outline-none"
                                     />
-
                                 </div>
 
                                 <Botao
@@ -365,14 +502,12 @@ function PerfilConteudo() {
                                 />
                             </>
                         )}
-
                     </div>
 
                     <div
                         className="flex flex-col items-center justify-center gap-16"
                         style={{ width: "31.25vw" }}
                     >
-
                         <h1 className="text-[clamp(40px,3.125vw,60px)]">
                             Pontos: {usuario.pontos}
                         </h1>
@@ -388,9 +523,7 @@ function PerfilConteudo() {
                         <h1 className="text-[clamp(40px,3.125vw,60px)]">
                             Derrotas: {usuario.derrotas}
                         </h1>
-
                     </div>
-
                 </div>
 
                 <Modal
@@ -402,21 +535,20 @@ function PerfilConteudo() {
                 />
 
                 <div className="flex flex-col items-center justify-center mt-30 w-full">
-
                     <h1 className="text-[77px]">
                         Conquistas
                     </h1>
 
                     <div className="grid grid-cols-5 mt-15 mb-25 w-full gap-x-[1.5vw] md:gap-x-[2vw] lg:gap-x-[4vw] xl:gap-x-[5.85vw] 2xl:gap-x-[8.85vw] gap-y-[13.76vh]">
-
-                        {conquistas.map((conquista) => {
-
+                        {conquistas.map(conquista => {
                             let cor = "";
                             let img: NomeIcone = "cadeado";
 
                             if (conquista.desbloqueada) {
                                 cor = "#C8911A";
-                                img = (conquista.icone?.toLowerCase() || "espada") as NomeIcone;
+                                img = (
+                                    conquista.icone?.toLowerCase() || "espada"
+                                ) as NomeIcone;
                             } else {
                                 cor = "#686868";
                                 img = "cadeado";
@@ -424,10 +556,9 @@ function PerfilConteudo() {
 
                             return (
                                 <div
-                                    key={conquista.idConquista}
+                                    key={conquista.codigo}
                                     className="flex flex-col text-center items-center justify-between"
                                 >
-
                                     <div
                                         className="w-[10.4167vw] h-[10.4167vw] shrink-0 rounded-[5px] shadow-sm flex items-center justify-center overflow-hidden"
                                         style={{ backgroundColor: cor }}
@@ -442,7 +573,9 @@ function PerfilConteudo() {
                                         {conquista.nome}
                                     </h1>
 
-                                    <span className={`text-[12px] px-2 py-0.5 my-1 ${getCorDificuldade(conquista.dificuldade)}`}>
+                                    <span
+                                        className={`text-[12px] px-2 py-0.5 my-1 ${getCorDificuldade(conquista.dificuldade)}`}
+                                    >
                                         {conquista.dificuldade}
                                     </span>
 
@@ -450,16 +583,20 @@ function PerfilConteudo() {
                                         {conquista.descricao}
                                     </h2>
 
+                                    {conquista.desbloqueada && conquista.dataDesbloqueio && (
+                                        <span className="mt-1 text-[11px] text-gray-400">
+                                            Desbloqueada em{" "}
+                                            {new Date(
+                                                conquista.dataDesbloqueio
+                                            ).toLocaleDateString("pt-BR")}
+                                        </span>
+                                    )}
                                 </div>
                             );
                         })}
-
                     </div>
-
                 </div>
-
             </div>
-
         </main>
     );
 }
@@ -469,7 +606,9 @@ export default function TelaPerfil() {
         <Suspense
             fallback={
                 <main className="min-h-screen bg-[#1B1B2F] flex items-center justify-center">
-                    <p className="text-white text-2xl">Carregando...</p>
+                    <p className="text-white text-2xl">
+                        Carregando...
+                    </p>
                 </main>
             }
         >

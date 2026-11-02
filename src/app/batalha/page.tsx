@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 
 import { Botao } from "@/components/ui/Botao";
@@ -10,6 +10,7 @@ import Modal, { CartaModal } from "@/components/layout/Modal";
 import { Carta, Baralho } from "@/types/Carta";
 import { EstadoJogador } from "@/types/EstadoJogador";
 import { corTipo } from "../loja/page";
+import { desbloquearConquista } from "@/lib/conquistas";
 //, ItensAtivos, EfeitoTemporario
 
 export interface ConfiguracaoBatalha {
@@ -156,6 +157,40 @@ function prepararMaoInicial(cartas: Carta[]): { mao: Carta[];  deck: Carta[]; }
 export default function TelaBatalha() {
     const router = useRouter();
 
+    const estatisticasConquistas = useRef({
+        personagensInvocados: {} as Record<number, number>,
+        suporteUsado: {} as Record<number, boolean>,
+        researchHelp: {} as Record<number, number>,
+        kingBlessing: {} as Record<number, boolean>,
+        queenBlessing: {} as Record<number, boolean>,
+        florCura: {} as Record<number, number>,
+        camposTrocados: {} as Record<number, number>,
+        ultimoJogadorCampo: 0,
+        errosRocky: {} as Record<number, boolean>,
+        errosFoggy: {} as Record<number, boolean>,
+        errosSmokescreen: {} as Record<number, boolean>,
+        orbExplosoes: {} as Record<number, number>,
+        cartasUsadas: {} as Record<number, string[]>,
+        vidaAbaixoMetade: {} as Record<number, boolean>,
+        recebeuDano: {} as Record<number, boolean>
+    });
+
+    function registrarCartaUsada(idUsuario: number, nomeCarta: string) {
+        const estatisticas = estatisticasConquistas.current;
+        const outroId = jogador1.idUsuario === idUsuario
+            ? jogador2.idUsuario
+            : jogador1.idUsuario;
+
+        const cartasDoOutro = estatisticas.cartasUsadas[outroId] ?? [];
+
+        if (cartasDoOutro.includes(nomeCarta)) {
+            desbloquearConquista(idUsuario, "copia");
+        }
+
+        const cartasDoJogador = estatisticas.cartasUsadas[idUsuario] ?? [];
+        estatisticas.cartasUsadas[idUsuario] = [...cartasDoJogador, nomeCarta];
+    }
+
     const [jogador1, setJogador1] = useState<EstadoJogador>( () => criarJogador(0, "Jogador 1") );
 
     const [jogador2, setJogador2] = useState<EstadoJogador>( () => criarJogador(0, "Jogador 2") );
@@ -293,6 +328,24 @@ export default function TelaBatalha() {
                 setJogador1(jogadorInicial1);
                 setJogador2(jogadorInicial2);
 
+                Object.assign(estatisticasConquistas.current, {
+                    personagensInvocados: {},
+                    suporteUsado: {},
+                    researchHelp: {},
+                    kingBlessing: {},
+                    queenBlessing: {},
+                    ultimoJogadorCampo: 0,
+                    florCura: {},
+                    camposTrocados: {},
+                    errosRocky: {},
+                    errosFoggy: {},
+                    errosSmokescreen: {},
+                    orbExplosoes: {},
+                    cartasUsadas: {},
+                    vidaAbaixoMetade: {},
+                    recebeuDano: {}
+                });
+
                 const primeiroJogadorEhJ1 = Math.random() < 0.5;
 
                 // A preparação inicial ainda precisa permitir
@@ -425,6 +478,7 @@ export default function TelaBatalha() {
         // Life Draining Flower
         if (atual.itensAtivos.lifeDrainingFlower && atual.personagemAtivo !== null && adversario.personagemAtivo !== null) {
             const vidaBase = atual.personagemAtivo.vida ?? 100;
+            const curaRealFlor = Math.min(4, Math.max(0, vidaBase - atual.hpAtivo));
 
             adversario = {
                 ...adversario,
@@ -437,6 +491,13 @@ export default function TelaBatalha() {
             };
 
             registrarLog("Life Draining Flower: Roubou 4 HP do oponente");
+
+            const curaAcumulada = (estatisticasConquistas.current.florCura[atual.idUsuario] ?? 0) + curaRealFlor;
+            estatisticasConquistas.current.florCura[atual.idUsuario] = curaAcumulada;
+
+            if (curaAcumulada >= 20) {
+                desbloquearConquista(atual.idUsuario, "aFlorDaVida");
+            }
 
             // Verifica se o oponente morreu
             const morteOponente = resolverMorteOponente(atual, adversario);
@@ -455,11 +516,16 @@ export default function TelaBatalha() {
         // Forest Glade: recupera 5 HP no início do turno.
         if (campoAtivo?.nome === "Forest Glade" && atual.personagemAtivo !== null) {
             const vidaBase = atual.personagemAtivo.vida ?? 100;
+            const estavaAbaixoDaMetade = atual.hpAtivo < vidaBase / 2;
 
             atual = {
                 ...atual,
                 hpAtivo: Math.min(atual.hpAtivo + 5, vidaBase)
             };
+
+            if (estavaAbaixoDaMetade) {
+                desbloquearConquista(atual.idUsuario, "refugio");
+            }
 
             registrarLog(`${atual.nome} recuperou 5 HP (Forest Glade)`);
         }
@@ -557,6 +623,12 @@ export default function TelaBatalha() {
                     primeiroTurno   : false
                 }
 
+                estatisticasConquistas.current.recebeuDano[atual.idUsuario] = false;
+
+                const invocados = estatisticasConquistas.current.personagensInvocados[atual.idUsuario] ?? 0;
+                estatisticasConquistas.current.personagensInvocados[atual.idUsuario] = invocados + 1;
+                registrarCartaUsada(atual.idUsuario, carta.nome ?? "Personagem");
+
                 registrarLog(`${atual.nome} invocou ${carta.nome}`);
 
                 setAguardandoSubstituicao(false);
@@ -582,10 +654,31 @@ export default function TelaBatalha() {
                     return;
                 }
 
+                estatisticasConquistas.current.suporteUsado[atual.idUsuario] = true;
+                registrarCartaUsada(atual.idUsuario, carta.nome ?? "Suporte");
+
                 switch (carta.nome) {
 
                     case "Heal Injection": {
                         const vidaBase = atual.personagemAtivo?.vida ?? 100;
+                        const vidaAntesDaCura = atual.hpAtivo;
+                        const vidaFaltante = Math.max(0, vidaBase - vidaAntesDaCura);
+
+                        if (20 > vidaFaltante) {
+                            desbloquearConquista(atual.idUsuario, "desperdicio");
+                        }
+
+                        if (vidaAntesDaCura < vidaBase / 2 && vidaAntesDaCura + 20 >= vidaBase) {
+                            desbloquearConquista(atual.idUsuario, "segundoFolego");
+                        }
+
+                        if (
+                            vidaFaltante > 0 &&
+                            campoAtivo?.nome === "Forest Glade" &&
+                            atual.itensAtivos.lifeDrainingFlower
+                        ) {
+                            desbloquearConquista(atual.idUsuario, "regeneracaoAbsoluta");
+                        }
 
                         atual = {
                             ...atual,
@@ -625,6 +718,13 @@ export default function TelaBatalha() {
                     }
 
                     case "Researcher's Help": {
+                        const usosPesquisa = (estatisticasConquistas.current.researchHelp[atual.idUsuario] ?? 0) + 1;
+                        estatisticasConquistas.current.researchHelp[atual.idUsuario] = usosPesquisa;
+
+                        if (usosPesquisa >= 3) {
+                            desbloquearConquista(atual.idUsuario, "espionagem");
+                        }
+
                         atual = {
                             ...atual,
                             buffDefesa: {
@@ -653,6 +753,12 @@ export default function TelaBatalha() {
                     }
 
                     case "King's Blessing": {
+                        estatisticasConquistas.current.kingBlessing[atual.idUsuario] = true;
+
+                        if (estatisticasConquistas.current.queenBlessing[atual.idUsuario]) {
+                            desbloquearConquista(atual.idUsuario, "sobACoroa");
+                        }
+
                         atual = {
                             ...atual,
                             buffDano: {
@@ -667,6 +773,12 @@ export default function TelaBatalha() {
                     }
 
                     case "Queen's Blessing": {
+                        estatisticasConquistas.current.queenBlessing[atual.idUsuario] = true;
+
+                        if (estatisticasConquistas.current.kingBlessing[atual.idUsuario]) {
+                            desbloquearConquista(atual.idUsuario, "sobACoroa");
+                        }
+
                         atual = {
                             ...atual,
                             buffDefesa: {
@@ -782,7 +894,24 @@ export default function TelaBatalha() {
             // CAMPO
             //================================================
             case "Campo": {
+                registrarCartaUsada(atual.idUsuario, carta.nome ?? "Campo");
 
+                const estatisticas = estatisticasConquistas.current;
+                const quantidadeCampos = (estatisticas.camposTrocados[atual.idUsuario] ?? 0) + 1;
+                estatisticas.camposTrocados[atual.idUsuario] = quantidadeCampos;
+
+                if (quantidadeCampos >= 3) {
+                    desbloquearConquista(atual.idUsuario, "guerraDeTerritorios");
+                }
+
+                if (
+                    estatisticas.ultimoJogadorCampo !== 0 &&
+                    estatisticas.ultimoJogadorCampo !== atual.idUsuario
+                ) {
+                    desbloquearConquista(atual.idUsuario, "minhasRegrasMeuJogo");
+                }
+
+                estatisticas.ultimoJogadorCampo = atual.idUsuario;
                 setCampoAtivo(carta);
 
                 atual = {
@@ -881,6 +1010,8 @@ export default function TelaBatalha() {
 
             // Explosão do Devouring Orb
             if (hpColetado >= 75) {
+                const explosoes = (estatisticasConquistas.current.orbExplosoes[atual.idUsuario] ?? 0) + 1;
+                estatisticasConquistas.current.orbExplosoes[atual.idUsuario] = explosoes;
 
                 // Remove até 3 cartas aleatórias da mão
                 for (let i = 0; i < 3; i++) {
@@ -906,6 +1037,8 @@ export default function TelaBatalha() {
                         devouringOrb: false
                     }
                 };
+
+                estatisticasConquistas.current.recebeuDano[atual.idUsuario] = true;
 
                 registrarLog(`O Devouring Orb explodiu. 45 de dano em ${atual.nome}`);
 
@@ -1135,6 +1268,7 @@ export default function TelaBatalha() {
 
         if (atual.erraProximoGolpe) {
             errou = true;
+            estatisticasConquistas.current.errosRocky[atual.idUsuario] = true;
 
             atual = {
                 ...atual,
@@ -1147,6 +1281,7 @@ export default function TelaBatalha() {
         else if ( atual.duracaoSmokescreen > 0 && atual.duracaoFocusLens <= 0 ) {
             if (Math.random() * 100 < 20) {
                 errou = true;
+                estatisticasConquistas.current.errosSmokescreen[atual.idUsuario] = true;
 
                 registrarLog(`${personagem.nome} errou o golpe devido ao Smokescreen`);
             }
@@ -1155,6 +1290,7 @@ export default function TelaBatalha() {
         ) {
             if (Math.random() * 100 < 15) {
                 errou = true;
+                estatisticasConquistas.current.errosFoggy[atual.idUsuario] = true;
 
                 registrarLog(`${personagem.nome} errou o golpe na neblina`);
             }
@@ -1163,6 +1299,28 @@ export default function TelaBatalha() {
         if (errou) {
             passarTurno(false, atual, adversario);
             return;
+        }
+
+        if (
+            atual.duracaoFocusLens > 0 &&
+            (atual.duracaoSmokescreen > 0 || campoAtivo?.nome === "Foggy Valley")
+        ) {
+            desbloquearConquista(atual.idUsuario, "atravesDaNevoa");
+        }
+
+        if (
+            atual.duracaoFocusLens > 0 &&
+            atual.duracaoSmokescreen > 0 &&
+            campoAtivo?.nome === "Foggy Valley"
+        ) {
+            desbloquearConquista(atual.idUsuario, "imunidade");
+        }
+
+        if (
+            atual.duracaoSmokescreen > 0 &&
+            campoAtivo?.nome === "Foggy Valley"
+        ) {
+            desbloquearConquista(atual.idUsuario, "ataqueNoEscuro");
         }
 
         // Concentração da Sword Legend:
@@ -1398,17 +1556,120 @@ export default function TelaBatalha() {
             registrarLog("Rigid Shell: Dano reduzido em 6");
         }
 
+        const vidaOponenteAntesAtaque = adversario.hpAtivo;
+        const vidaBaseOponenteAntesAtaque = adversario.personagemAtivo?.vida ?? 100;
+        const vidaBaseAtacanteAntesAtaque = personagem.vida ?? 100;
+
+        if (danoTotal > 0 && danoFinal === 0) {
+            desbloquearConquista(adversario.idUsuario, "paredeDeFerro");
+        }
+
+        if (campoAtivo?.nome === "Fiery Field" && danoFinal > 0) {
+            desbloquearConquista(atual.idUsuario, "campoPerfeito");
+        }
+
+        if (
+            campoAtivo?.nome === "Tidal Seas" &&
+            vidaOponenteAntesAtaque > 0 &&
+            danoTotal >= vidaOponenteAntesAtaque &&
+            danoFinal < vidaOponenteAntesAtaque
+        ) {
+            desbloquearConquista(adversario.idUsuario, "calmaAntesDaTempestade");
+        }
+
         // Aplica o dano ao oponente.
         adversario = {
             ...adversario,
             hpAtivo: adversario.hpAtivo - danoFinal
         };
 
+        if (danoFinal > 0) {
+            estatisticasConquistas.current.recebeuDano[adversario.idUsuario] = true;
+        }
+
+        if (
+            adversario.hpAtivo > 0 &&
+            adversario.hpAtivo < 10
+        ) {
+            desbloquearConquista(adversario.idUsuario, "porUmFio");
+        }
+
+        if (
+            danoFinal > vidaOponenteAntesAtaque &&
+            vidaOponenteAntesAtaque > 0
+        ) {
+            desbloquearConquista(atual.idUsuario, "overkill");
+        }
+
+        if (
+            personagem.nome === "Assassin" &&
+            vidaOponenteAntesAtaque === vidaBaseOponenteAntesAtaque &&
+            adversario.hpAtivo <= 0
+        ) {
+            desbloquearConquista(atual.idUsuario, "precisaoCirurgica");
+        }
+
+        if (
+            adversario.hpAtivo <= 0 &&
+            !estatisticasConquistas.current.recebeuDano[atual.idUsuario]
+        ) {
+            desbloquearConquista(atual.idUsuario, "intocavel");
+        }
+
+        if (
+            adversario.personagemAtivo?.nome === "Sword Legend" &&
+            personagem.nome === "Sword Apprentice" &&
+            adversario.hpAtivo <= 0
+        ) {
+            desbloquearConquista(atual.idUsuario, "derrubandoALenda");
+        }
+
+        if (
+            vidaOponenteAntesAtaque === vidaBaseOponenteAntesAtaque &&
+            atual.hpAtivo === vidaBaseAtacanteAntesAtaque &&
+            vidaBaseOponenteAntesAtaque > vidaBaseAtacanteAntesAtaque &&
+            adversario.hpAtivo <= 0
+        ) {
+            desbloquearConquista(atual.idUsuario, "superacaoDeVida");
+        }
+
+        if (
+            personagem.nome === "Sword Legend" &&
+            atual.ignorarDefesa &&
+            bonusDano > 0 &&
+            danoFinal > 0
+        ) {
+            desbloquearConquista(atual.idUsuario, "espadachimSupremo");
+        }
+
         // Aplica a cura do próprio personagem.
+        const vidaAntesDaCura = atual.hpAtivo;
+        const vidaFaltanteAntesDaCura = Math.max(0, vidaBase - vidaAntesDaCura);
+        const curaReal = Math.min(curaPropria, vidaFaltanteAntesDaCura);
+
+        if (curaPropria > vidaFaltanteAntesDaCura) {
+            desbloquearConquista(atual.idUsuario, "desperdicio");
+        }
+
         atual = {
             ...atual,
             hpAtivo: Math.min(atual.hpAtivo + curaPropria, vidaBase)
         };
+
+        if (
+            vidaAntesDaCura < vidaBase / 2 &&
+            atual.hpAtivo >= vidaBase
+        ) {
+            desbloquearConquista(atual.idUsuario, "segundoFolego");
+        }
+
+        if (
+            curaReal > 0 &&
+            campoAtivo?.nome === "Forest Glade" &&
+            atual.itensAtivos.lifeDrainingFlower
+        ) {
+            desbloquearConquista(atual.idUsuario, "regeneracaoAbsoluta");
+        }
 
         // Reflexão de dano.
         let substituicaoPendente = false;
@@ -1465,6 +1726,14 @@ export default function TelaBatalha() {
                 hpAtivo: atual.hpAtivo - danoRefletido
             };
 
+            if (danoRefletido > 0) {
+                estatisticasConquistas.current.recebeuDano[atual.idUsuario] = true;
+            }
+
+            if (atual.hpAtivo > 0 && atual.hpAtivo < 10) {
+                desbloquearConquista(atual.idUsuario, "porUmFio");
+            }
+
             registrarLog(
                 `Contra-ataque. ${atual.nome} recebeu ${danoRefletido} de volta`
             );
@@ -1476,6 +1745,13 @@ export default function TelaBatalha() {
             adversario = morteJogador.adversario;
 
             morteJogador.logs.forEach(registrarLog);
+
+            if (
+                (morteJogador.finalizada || morteJogador.aguardandoSubstituicao) &&
+                adversario.personagemAtivo?.nome === "Dragon Knight"
+            ) {
+                desbloquearConquista(adversario.idUsuario, "contraAtaquePerfeito");
+            }
 
             if (morteJogador.finalizada) {
                 oponenteAtingiuVitoria = true;
@@ -1596,6 +1872,60 @@ export default function TelaBatalha() {
         const nomeVencedor = vencedorEhJogador1
             ? jogador1.nome
             : jogador2.nome;
+
+        const jogadorPerdedor = vencedorEhJogador1 ? jogador2 : jogador1;
+
+        desbloquearConquista(idVencedor, "oPrimeiroPasso");
+
+        if (typeof window !== "undefined") {
+            const chaveVitorias = `cardgame_vitorias_${idVencedor}`;
+            const totalVitorias = Number(localStorage.getItem(chaveVitorias) ?? "0") + 1;
+            const chaveUltimoResultado = `cardgame_ultimo_resultado_${idVencedor}`;
+            const ultimoResultado = localStorage.getItem(chaveUltimoResultado);
+
+            localStorage.setItem(chaveVitorias, String(totalVitorias));
+            localStorage.setItem(chaveUltimoResultado, "vitoria");
+
+            if (totalVitorias >= 10) {
+                desbloquearConquista(idVencedor, "caminhoDaMaestria");
+            }
+
+            if (ultimoResultado === "vitoria") {
+                desbloquearConquista(idVencedor, "noEmbolo");
+            }
+
+            localStorage.setItem(
+                `cardgame_ultimo_resultado_${idPerdedor}`,
+                "derrota"
+            );
+        }
+
+        if (
+            jogadorPerdedor.personagensDerrotados >= 2
+        ) {
+            desbloquearConquista(idVencedor, "aGrandeVirada");
+        }
+
+        if (
+            (estatisticasConquistas.current.personagensInvocados[idVencedor] ?? 0) === 1
+        ) {
+            desbloquearConquista(idVencedor, "solo");
+        }
+
+        if (!estatisticasConquistas.current.suporteUsado[idVencedor]) {
+            desbloquearConquista(idVencedor, "autonomo");
+        }
+
+        if ((estatisticasConquistas.current.orbExplosoes[idVencedor] ?? 0) >= 3) {
+            desbloquearConquista(idVencedor, "autoSabotagem");
+        }
+
+        if (
+            estatisticasConquistas.current.errosRocky[idVencedor] &&
+            estatisticasConquistas.current.errosFoggy[idVencedor]
+        ) {
+            desbloquearConquista(idVencedor, "nadaMePara");
+        }
 
         setVencedor(nomeVencedor);
         setBatalhaFinalizada(true);
