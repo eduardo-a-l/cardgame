@@ -66,7 +66,7 @@ export const conquistas: Conquista[] = [
         icone: "oprimeiropasso"
     },
     {
-        codigo: "noEmbolo",
+        codigo: "noEmbalo",
         nome: "No Embalo",
         descricao: "Vença duas batalhas consecutivas.",
         dificuldade: "Fácil",

@@ -37,27 +37,43 @@ interface Conquista {
 
 interface ConquistaAPI extends Conquista {}
 
+function normalizarCodigo(codigo: string): string {
+    const normalizado = codigo
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-zA-Z0-9]/g, "")
+        .toLowerCase();
+
+    const aliases: Record<string, string> = {
+        feiticocontrafeiticeiro: "feiticocontraofeiticeiro"
+    };
+
+    return aliases[normalizado] ?? normalizado;
+}
+
 function combinarConquistas(
     conquistasAPI: ConquistaAPI[],
     conquistasLocais: ConquistaDesbloqueada[]
 ): Conquista[] {
     const apiPorCodigo = new Map(
         conquistasAPI.map(conquista => [
-            conquista.codigo,
+            normalizarCodigo(conquista.codigo),
             conquista
         ])
     );
 
     const localPorCodigo = new Map(
         conquistasLocais.map(conquista => [
-            conquista.codigo,
+            normalizarCodigo(conquista.codigo),
             conquista
         ])
     );
 
     const resultado = catalogoConquistas.map((modelo, indice) => {
-        const conquistaAPI = apiPorCodigo.get(modelo.codigo);
-        const conquistaLocal = localPorCodigo.get(modelo.codigo);
+        const codigoNormalizado = normalizarCodigo(modelo.codigo);
+
+        const conquistaAPI = apiPorCodigo.get(codigoNormalizado);
+        const conquistaLocal = localPorCodigo.get(codigoNormalizado);
 
         return {
             idConquista: conquistaAPI?.idConquista ?? -(indice + 1),
@@ -65,24 +81,37 @@ function combinarConquistas(
             nome: conquistaAPI?.nome ?? modelo.nome,
             descricao: conquistaAPI?.descricao ?? modelo.descricao,
             dificuldade: conquistaAPI?.dificuldade ?? modelo.dificuldade,
-            icone: conquistaAPI?.icone ?? modelo.icone,
+            icone: modelo.icone,
+
             desbloqueada: Boolean(
                 conquistaAPI?.desbloqueada || conquistaLocal
             ),
+
             dataDesbloqueio:
-                conquistaAPI?.dataDesbloqueio ??
-                conquistaLocal?.dataDesbloqueio ??
+                conquistaAPI?.dataDesbloqueio ||
+                conquistaLocal?.dataDesbloqueio ||
                 null
         };
     });
 
     const codigosCatalogo = new Set(
-        catalogoConquistas.map(conquista => conquista.codigo)
+        catalogoConquistas.map(conquista =>
+            normalizarCodigo(conquista.codigo)
+        )
     );
 
-    const conquistasExtrasAPI = conquistasAPI.filter(
-        conquista => !codigosCatalogo.has(conquista.codigo)
-    );
+    const codigosExtras = new Set<string>();
+
+    const conquistasExtrasAPI = conquistasAPI.filter(conquista => {
+        const codigo = normalizarCodigo(conquista.codigo);
+
+        if (codigosCatalogo.has(codigo) || codigosExtras.has(codigo)) {
+            return false;
+        }
+
+        codigosExtras.add(codigo);
+        return true;
+    });
 
     return [...resultado, ...conquistasExtrasAPI];
 }
