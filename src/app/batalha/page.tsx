@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 
 import { Botao } from "@/components/ui/Botao";
@@ -10,6 +10,7 @@ import Modal, { CartaModal } from "@/components/layout/Modal";
 import { Carta, Baralho } from "@/types/Carta";
 import { EstadoJogador } from "@/types/EstadoJogador";
 import { corTipo } from "../loja/page";
+import { desbloquearConquista } from "@/lib/conquistas";
 //, ItensAtivos, EfeitoTemporario
 
 export interface ConfiguracaoBatalha {
@@ -119,7 +120,7 @@ function embaralharCartas(cartas: Carta[]): Carta[] {
     const resultado = [...cartas];
 
     for (let i = resultado.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
+        const j = Math.floor(gerarNumeroAleatorio() * (i + 1));
 
         [resultado[i], resultado[j]] = [
             resultado[j],
@@ -153,8 +154,71 @@ function prepararMaoInicial(cartas: Carta[]): { mao: Carta[];  deck: Carta[]; }
     };
 }
 
+function gerarNumeroAleatorio(): number {
+    return Math.random();
+}
+
 export default function TelaBatalha() {
     const router = useRouter();
+
+    const estatisticasConquistas = useRef({
+        personagensInvocados: {} as Record<number, number>,
+        suporteUsado: {} as Record<number, boolean>,
+        researchHelp: {} as Record<number, number>,
+        kingBlessing: {} as Record<number, boolean>,
+        queenBlessing: {} as Record<number, boolean>,
+        florCura: {} as Record<number, number>,
+        camposTrocados: {} as Record<number, number>,
+        ultimoJogadorCampo: 0,
+        errosRocky: {} as Record<number, boolean>,
+        errosFoggy: {} as Record<number, boolean>,
+        errosSmokescreen: {} as Record<number, boolean>,
+        orbExplosoes: {} as Record<number, number>,
+        cartasUsadas: {} as Record<number, string[]>,
+        vidaAbaixoMetade: {} as Record<number, boolean>,
+        recebeuDano: {} as Record<number, boolean>,
+        turnoPerfeito: {} as Record<
+            number,
+            { dano: boolean; cura: boolean; efeito: boolean }
+        >
+    });
+
+    function registrarProgressoTurno(
+        idUsuario: number,
+        parte: "dano" | "cura" | "efeito"
+    ) {
+        const anterior =
+            estatisticasConquistas.current.turnoPerfeito[idUsuario] ??
+            { dano: false, cura: false, efeito: false };
+
+        const atualizado = {
+            ...anterior,
+            [parte]: true
+        };
+
+        estatisticasConquistas.current.turnoPerfeito[idUsuario] =
+            atualizado;
+
+        if (atualizado.dano && atualizado.cura && atualizado.efeito) {
+            desbloquearConquista(idUsuario, "turnoPerfeito");
+        }
+    }
+
+    function registrarCartaUsada(idUsuario: number, nomeCarta: string) {
+        const estatisticas = estatisticasConquistas.current;
+        const outroId = jogador1.idUsuario === idUsuario
+            ? jogador2.idUsuario
+            : jogador1.idUsuario;
+
+        const cartasDoOutro = estatisticas.cartasUsadas[outroId] ?? [];
+
+        if (cartasDoOutro.includes(nomeCarta)) {
+            desbloquearConquista(idUsuario, "copia");
+        }
+
+        const cartasDoJogador = estatisticas.cartasUsadas[idUsuario] ?? [];
+        estatisticas.cartasUsadas[idUsuario] = [...cartasDoJogador, nomeCarta];
+    }
 
     const [jogador1, setJogador1] = useState<EstadoJogador>( () => criarJogador(0, "Jogador 1") );
 
@@ -293,7 +357,26 @@ export default function TelaBatalha() {
                 setJogador1(jogadorInicial1);
                 setJogador2(jogadorInicial2);
 
-                const primeiroJogadorEhJ1 = Math.random() < 0.5;
+                Object.assign(estatisticasConquistas.current, {
+                    personagensInvocados: {},
+                    suporteUsado: {},
+                    researchHelp: {},
+                    kingBlessing: {},
+                    queenBlessing: {},
+                    ultimoJogadorCampo: 0,
+                    florCura: {},
+                    camposTrocados: {},
+                    errosRocky: {},
+                    errosFoggy: {},
+                    errosSmokescreen: {},
+                    orbExplosoes: {},
+                    cartasUsadas: {},
+                    vidaAbaixoMetade: {},
+                    recebeuDano: {},
+                    turnoPerfeito: {},
+                });
+
+                const primeiroJogadorEhJ1 = gerarNumeroAleatorio() < 0.5;
 
                 // A preparação inicial ainda precisa permitir
                 // que cada jogador escolha seu personagem.
@@ -345,6 +428,12 @@ export default function TelaBatalha() {
 
         let atual = jogadorDaVez;
         let adversario = oponente;
+
+        estatisticasConquistas.current.turnoPerfeito[atual.idUsuario] = {
+            dano: false,
+            cura: false,
+            efeito: false
+        };
 
         let substituicaoPendente = aguardandoSubstituicao;
         let finalizada: boolean = batalhaFinalizada;
@@ -425,6 +514,11 @@ export default function TelaBatalha() {
         // Life Draining Flower
         if (atual.itensAtivos.lifeDrainingFlower && atual.personagemAtivo !== null && adversario.personagemAtivo !== null) {
             const vidaBase = atual.personagemAtivo.vida ?? 100;
+            const curaRealFlor = Math.min(4, Math.max(0, vidaBase - atual.hpAtivo));
+
+            if (curaRealFlor > 0) {
+                registrarProgressoTurno(atual.idUsuario, "cura");
+            }
 
             adversario = {
                 ...adversario,
@@ -437,6 +531,13 @@ export default function TelaBatalha() {
             };
 
             registrarLog("Life Draining Flower: Roubou 4 HP do oponente");
+
+            const curaAcumulada = (estatisticasConquistas.current.florCura[atual.idUsuario] ?? 0) + curaRealFlor;
+            estatisticasConquistas.current.florCura[atual.idUsuario] = curaAcumulada;
+
+            if (curaAcumulada >= 20) {
+                desbloquearConquista(atual.idUsuario, "aFlorDaVida");
+            }
 
             // Verifica se o oponente morreu
             const morteOponente = resolverMorteOponente(atual, adversario);
@@ -455,11 +556,21 @@ export default function TelaBatalha() {
         // Forest Glade: recupera 5 HP no início do turno.
         if (campoAtivo?.nome === "Forest Glade" && atual.personagemAtivo !== null) {
             const vidaBase = atual.personagemAtivo.vida ?? 100;
+            const estavaAbaixoDaMetade = atual.hpAtivo < vidaBase / 2;
+            const curaRealCampo = Math.min(5, Math.max(0, vidaBase - atual.hpAtivo));
 
             atual = {
                 ...atual,
                 hpAtivo: Math.min(atual.hpAtivo + 5, vidaBase)
             };
+
+            if (curaRealCampo > 0) {
+                registrarProgressoTurno(atual.idUsuario, "cura");
+            }
+
+            if (estavaAbaixoDaMetade) {
+                desbloquearConquista(atual.idUsuario, "refugio");
+            }
 
             registrarLog(`${atual.nome} recuperou 5 HP (Forest Glade)`);
         }
@@ -541,7 +652,7 @@ export default function TelaBatalha() {
 
                 if (campoAtivo?.nome === "Rocky Hills") {
                     vidaInicial -= 5;
-                    erraGolpe = Math.random() < 0.4;
+                    erraGolpe = true;
 
                     registrarLog(
                         "Rocky Hills: tomou 5 de dano e pode errar o primeiro golpe"
@@ -556,6 +667,12 @@ export default function TelaBatalha() {
                     mao             : atual.mao.filter( (_, i) => i !== indice ),
                     primeiroTurno   : false
                 }
+
+                estatisticasConquistas.current.recebeuDano[atual.idUsuario] = false;
+
+                const invocados = estatisticasConquistas.current.personagensInvocados[atual.idUsuario] ?? 0;
+                estatisticasConquistas.current.personagensInvocados[atual.idUsuario] = invocados + 1;
+                registrarCartaUsada(atual.idUsuario, carta.nome ?? "Personagem");
 
                 registrarLog(`${atual.nome} invocou ${carta.nome}`);
 
@@ -582,10 +699,31 @@ export default function TelaBatalha() {
                     return;
                 }
 
+                estatisticasConquistas.current.suporteUsado[atual.idUsuario] = true;
+                registrarCartaUsada(atual.idUsuario, carta.nome ?? "Suporte");
+
                 switch (carta.nome) {
 
                     case "Heal Injection": {
                         const vidaBase = atual.personagemAtivo?.vida ?? 100;
+                        const vidaAntesDaCura = atual.hpAtivo;
+                        const vidaFaltante = Math.max(0, vidaBase - vidaAntesDaCura);
+
+                        if (20 > vidaFaltante) {
+                            desbloquearConquista(atual.idUsuario, "desperdicio");
+                        }
+
+                        if (vidaAntesDaCura < vidaBase / 2 && vidaAntesDaCura + 20 >= vidaBase) {
+                            desbloquearConquista(atual.idUsuario, "segundoFolego");
+                        }
+
+                        if (
+                            vidaFaltante > 0 &&
+                            campoAtivo?.nome === "Forest Glade" &&
+                            atual.itensAtivos.lifeDrainingFlower
+                        ) {
+                            desbloquearConquista(atual.idUsuario, "regeneracaoAbsoluta");
+                        }
 
                         atual = {
                             ...atual,
@@ -625,6 +763,13 @@ export default function TelaBatalha() {
                     }
 
                     case "Researcher's Help": {
+                        const usosPesquisa = (estatisticasConquistas.current.researchHelp[atual.idUsuario] ?? 0) + 1;
+                        estatisticasConquistas.current.researchHelp[atual.idUsuario] = usosPesquisa;
+
+                        if (usosPesquisa >= 3) {
+                            desbloquearConquista(atual.idUsuario, "espionagem");
+                        }
+
                         atual = {
                             ...atual,
                             buffDefesa: {
@@ -638,7 +783,7 @@ export default function TelaBatalha() {
 
                         if (adversarioAtualizado.mao.length > 0) {
                             const indiceAleatorio = Math.floor(
-                                Math.random() * adversarioAtualizado.mao.length
+                                gerarNumeroAleatorio() * adversarioAtualizado.mao.length
                             );
 
                             const cartaRevelada =
@@ -653,6 +798,12 @@ export default function TelaBatalha() {
                     }
 
                     case "King's Blessing": {
+                        estatisticasConquistas.current.kingBlessing[atual.idUsuario] = true;
+
+                        if (estatisticasConquistas.current.queenBlessing[atual.idUsuario]) {
+                            desbloquearConquista(atual.idUsuario, "sobACoroa");
+                        }
+
                         atual = {
                             ...atual,
                             buffDano: {
@@ -667,6 +818,12 @@ export default function TelaBatalha() {
                     }
 
                     case "Queen's Blessing": {
+                        estatisticasConquistas.current.queenBlessing[atual.idUsuario] = true;
+
+                        if (estatisticasConquistas.current.kingBlessing[atual.idUsuario]) {
+                            desbloquearConquista(atual.idUsuario, "sobACoroa");
+                        }
+
                         atual = {
                             ...atual,
                             buffDefesa: {
@@ -765,6 +922,8 @@ export default function TelaBatalha() {
                     }
                 }
 
+                registrarProgressoTurno(atual.idUsuario, "efeito");
+
                 // Remove o suporte da mão.
                 atual = {
                     ...atual,
@@ -782,8 +941,27 @@ export default function TelaBatalha() {
             // CAMPO
             //================================================
             case "Campo": {
+                registrarCartaUsada(atual.idUsuario, carta.nome ?? "Campo");
 
+                const estatisticas = estatisticasConquistas.current;
+                const quantidadeCampos = (estatisticas.camposTrocados[atual.idUsuario] ?? 0) + 1;
+                estatisticas.camposTrocados[atual.idUsuario] = quantidadeCampos;
+
+                if (quantidadeCampos >= 3) {
+                    desbloquearConquista(atual.idUsuario, "guerraDeTerritorios");
+                }
+
+                if (
+                    estatisticas.ultimoJogadorCampo !== 0 &&
+                    estatisticas.ultimoJogadorCampo !== atual.idUsuario
+                ) {
+                    desbloquearConquista(atual.idUsuario, "minhasRegrasMeuJogo");
+                }
+
+                estatisticas.ultimoJogadorCampo = atual.idUsuario;
                 setCampoAtivo(carta);
+
+                registrarProgressoTurno(atual.idUsuario, "efeito");
 
                 atual = {
                     ...atual,
@@ -881,12 +1059,14 @@ export default function TelaBatalha() {
 
             // Explosão do Devouring Orb
             if (hpColetado >= 75) {
+                const explosoes = (estatisticasConquistas.current.orbExplosoes[atual.idUsuario] ?? 0) + 1;
+                estatisticasConquistas.current.orbExplosoes[atual.idUsuario] = explosoes;
 
                 // Remove até 3 cartas aleatórias da mão
                 for (let i = 0; i < 3; i++) {
                     if (atual.mao.length === 0) break;
 
-                    const indice = Math.floor(Math.random() * atual.mao.length);
+                    const indice = Math.floor(gerarNumeroAleatorio() * atual.mao.length);
                     const removida = atual.mao[indice];
 
                     atual = {
@@ -906,6 +1086,8 @@ export default function TelaBatalha() {
                         devouringOrb: false
                     }
                 };
+
+                estatisticasConquistas.current.recebeuDano[atual.idUsuario] = true;
 
                 registrarLog(`O Devouring Orb explodiu. 45 de dano em ${atual.nome}`);
 
@@ -961,7 +1143,35 @@ export default function TelaBatalha() {
         }
     }
 
-    function salvarEstadosJogadores(atual: EstadoJogador, adversario: EstadoJogador) {
+    function verificarColecionadorDeStatus(jogador: EstadoJogador) {
+        const efeitosAtivos = [
+            jogador.buffDano.valor > 0,
+            jogador.buffDefesa.valor > 0,
+            jogador.turnosSemAcao > 0,
+            jogador.refletirDano,
+            jogador.duracaoFocusLens > 0,
+            jogador.duracaoSmokescreen > 0,
+            jogador.itensAtivos.sharpClaws,
+            jogador.itensAtivos.rigidShell,
+            jogador.itensAtivos.lifeDrainingFlower,
+            jogador.itensAtivos.devouringOrb
+        ];
+
+        if (efeitosAtivos.every(Boolean)) {
+            desbloquearConquista(
+                jogador.idUsuario,
+                "colecionadorDeStatus"
+            );
+        }
+    }
+
+    function salvarEstadosJogadores(
+        atual: EstadoJogador,
+        adversario: EstadoJogador
+    ) {
+        verificarColecionadorDeStatus(atual);
+        verificarColecionadorDeStatus(adversario);
+
         if (turnoDoJogador1) {
             setJogador1(atual);
             setJogador2(adversario);
@@ -1130,39 +1340,96 @@ export default function TelaBatalha() {
             return;
         }
 
-        // Verifica se o golpe será errôneo.
+        // Verifica independentemente cada fonte de erro.
         let errou = false;
+        let chanceErroTotal = 0;
 
-        if (atual.erraProximoGolpe) {
-            errou = true;
+        const rockyAtivo = atual.erraProximoGolpe;
+        const smokeAtivo =
+            atual.duracaoSmokescreen > 0 &&
+            atual.duracaoFocusLens <= 0;
+        const foggyAtivo =
+            campoAtivo?.nome === "Foggy Valley" &&
+            atual.duracaoFocusLens <= 0;
 
+        const chancesErro: { nome: string; chance: number }[] = [];
+
+        if (rockyAtivo) {
+            chancesErro.push({ nome: "Rocky Hills", chance: 0.4 });
+        }
+
+        if (smokeAtivo) {
+            chancesErro.push({ nome: "Smokescreen", chance: 0.2 });
+        }
+
+        if (foggyAtivo) {
+            chancesErro.push({ nome: "Foggy Valley", chance: 0.15 });
+        }
+
+        chanceErroTotal = 1 -
+            chancesErro.reduce(
+                (probabilidade, efeito) => probabilidade * (1 - efeito.chance),
+                1
+            );
+
+        for (const efeito of chancesErro) {
+            if (gerarNumeroAleatorio() < efeito.chance) {
+                errou = true;
+
+                if (efeito.nome === "Rocky Hills") {
+                    estatisticasConquistas.current.errosRocky[atual.idUsuario] = true;
+                }
+
+                if (efeito.nome === "Smokescreen") {
+                    estatisticasConquistas.current.errosSmokescreen[atual.idUsuario] = true;
+                }
+
+                if (efeito.nome === "Foggy Valley") {
+                    estatisticasConquistas.current.errosFoggy[atual.idUsuario] = true;
+                }
+
+                registrarLog(
+                    `${personagem.nome} errou o golpe devido a ${efeito.nome}`
+                );
+            }
+        }
+
+        if (rockyAtivo) {
             atual = {
                 ...atual,
                 erraProximoGolpe: false
             };
-
-            registrarLog(`${personagem.nome} errou o golpe devido ao Rocky Hills`);
-        }
-
-        else if ( atual.duracaoSmokescreen > 0 && atual.duracaoFocusLens <= 0 ) {
-            if (Math.random() * 100 < 20) {
-                errou = true;
-
-                registrarLog(`${personagem.nome} errou o golpe devido ao Smokescreen`);
-            }
-        }
-        else if ( campoAtivo?.nome === "Foggy Valley" && atual.duracaoFocusLens <= 0
-        ) {
-            if (Math.random() * 100 < 15) {
-                errou = true;
-
-                registrarLog(`${personagem.nome} errou o golpe na neblina`);
-            }
         }
 
         if (errou) {
             passarTurno(false, atual, adversario);
             return;
+        }
+
+        if (chanceErroTotal > 0.5) {
+            desbloquearConquista(atual.idUsuario, "contraAsProbabilidades");
+        }
+
+        if (
+            atual.duracaoFocusLens > 0 &&
+            (atual.duracaoSmokescreen > 0 || campoAtivo?.nome === "Foggy Valley")
+        ) {
+            desbloquearConquista(atual.idUsuario, "atravesDaNevoa");
+        }
+
+        if (
+            atual.duracaoFocusLens > 0 &&
+            atual.duracaoSmokescreen > 0 &&
+            campoAtivo?.nome === "Foggy Valley"
+        ) {
+            desbloquearConquista(atual.idUsuario, "imunidade");
+        }
+
+        if (
+            atual.duracaoSmokescreen > 0 &&
+            campoAtivo?.nome === "Foggy Valley"
+        ) {
+            desbloquearConquista(atual.idUsuario, "ataqueNoEscuro");
         }
 
         // Concentração da Sword Legend:
@@ -1190,7 +1457,7 @@ export default function TelaBatalha() {
                 if (numeroAcao === 1) {
                     danoBase = 15;
 
-                    if (Math.random() * 100 < 10) {
+                    if (gerarNumeroAleatorio() * 100 < 10) {
                         bonusDano = 5;
                     }
                 }
@@ -1207,20 +1474,104 @@ export default function TelaBatalha() {
                 if (numeroAcao === 1) {
                     danoBase = 5;
 
-                    if ( adversario.buffDano.valor > 0 || adversario.buffDefesa.valor > 0 ) {
+                    let quantidadeEfeitosRoubados = 0;
+
+                    // Buffs de ataque e defesa
+                    if (adversario.buffDano.valor > 0) {
                         atual = {
                             ...atual,
                             buffDano: { ...adversario.buffDano },
-                            buffDefesa: { ...adversario.buffDefesa }
+                            pularDecrementoBuffDano: adversario.pularDecrementoBuffDano
                         };
 
                         adversario = {
                             ...adversario,
                             buffDano: { valor: 0, duracao: 0 },
-                            buffDefesa: { valor: 0, duracao: 0 }
+                            pularDecrementoBuffDano: false
                         };
 
-                        registrarLog("Thief roubou os efeitos de suporte");
+                        quantidadeEfeitosRoubados++;
+                    }
+
+                    if (adversario.buffDefesa.valor > 0) {
+                        atual = {
+                            ...atual,
+                            buffDefesa: { ...adversario.buffDefesa },
+                            pularDecrementoBuffDefesa: adversario.pularDecrementoBuffDefesa
+                        };
+
+                        adversario = {
+                            ...adversario,
+                            buffDefesa: { valor: 0, duracao: 0 },
+                            pularDecrementoBuffDefesa: false
+                        };
+
+                        quantidadeEfeitosRoubados++;
+                    }
+
+                    // Focus Lens
+                    if (adversario.duracaoFocusLens > 0) {
+                        atual = {
+                            ...atual,
+                            duracaoFocusLens: adversario.duracaoFocusLens,
+                            pularDecrementoFocusLens: adversario.pularDecrementoFocusLens
+                        };
+
+                        adversario = {
+                            ...adversario,
+                            duracaoFocusLens: 0,
+                            pularDecrementoFocusLens: false
+                        };
+
+                        quantidadeEfeitosRoubados++;
+                    }
+
+                    // Itens ativos
+                    const itens = [
+                        "sharpClaws",
+                        "rigidShell",
+                        "lifeDrainingFlower",
+                        "devouringOrb"
+                    ] as const;
+
+                    for (const item of itens) {
+                        if (adversario.itensAtivos[item]) {
+                            atual = {
+                                ...atual,
+                                itensAtivos: {
+                                    ...atual.itensAtivos,
+                                    [item]: true
+                                },
+                                ...(item === "devouringOrb"
+                                    ? { hpColetadoOrb: adversario.hpColetadoOrb }
+                                    : {})
+                            };
+
+                            adversario = {
+                                ...adversario,
+                                itensAtivos: {
+                                    ...adversario.itensAtivos,
+                                    [item]: false
+                                },
+                                ...(item === "devouringOrb"
+                                    ? { hpColetadoOrb: 0 }
+                                    : {})
+                            };
+
+                            quantidadeEfeitosRoubados++;
+                        }
+                    }
+
+                    if (quantidadeEfeitosRoubados > 0) {
+                        registrarLog(
+                            `Thief roubou ${quantidadeEfeitosRoubados} efeito(s) positivo(s)`
+                        );
+
+                        registrarProgressoTurno(atual.idUsuario, "efeito");
+                    }
+
+                    if (quantidadeEfeitosRoubados >= 3) {
+                        desbloquearConquista(atual.idUsuario, "saqueador");
                     }
                 }
                 break;
@@ -1229,7 +1580,7 @@ export default function TelaBatalha() {
                 if (numeroAcao === 1) {
                     danoBase = 20;
 
-                    if (Math.random() * 100 < 50) {
+                    if (gerarNumeroAleatorio() * 100 < 50) {
                         bonusDano = 5;
                     }
                 }
@@ -1240,7 +1591,7 @@ export default function TelaBatalha() {
                     danoBase = 10;
                     curaPropria = 10;
 
-                    if (Math.random() * 100 < 20) {
+                    if (gerarNumeroAleatorio() * 100 < 20) {
                         bonusDano = 10;
                     }
                 }
@@ -1250,7 +1601,7 @@ export default function TelaBatalha() {
                 if (numeroAcao === 1) {
                     danoBase = 10;
 
-                    if (Math.random() * 100 < 20) {
+                    if (gerarNumeroAleatorio() * 100 < 20) {
                         adversario = {
                             ...adversario,
                             buffDano: { valor: 0, duracao: 0 },
@@ -1307,6 +1658,8 @@ export default function TelaBatalha() {
                         "Dragon Knight em postura de contra-ataque (2 turnos)"
                     );
 
+                    registrarProgressoTurno(atual.idUsuario, "efeito");
+
                     passarTurno(false, atual, adversario);
                     return;
                 }
@@ -1318,7 +1671,7 @@ export default function TelaBatalha() {
 
                     const chanceCritica = 40 + atual.bonusChanceCrit;
 
-                    if (Math.random() * 100 < chanceCritica) {
+                    if (gerarNumeroAleatorio() * 100 < chanceCritica) {
                         bonusDano = 15;
                     }
                     atual = {
@@ -1339,6 +1692,8 @@ export default function TelaBatalha() {
                     registrarLog(
                         "Sword Legend concentrando poder. Próxima ação ignorará defesa e terá +30% crítico"
                     );
+
+                    registrarProgressoTurno(atual.idUsuario, "efeito");
 
                     passarTurno(false, atual, adversario);
                     return;
@@ -1398,17 +1753,125 @@ export default function TelaBatalha() {
             registrarLog("Rigid Shell: Dano reduzido em 6");
         }
 
+        const vidaOponenteAntesAtaque = adversario.hpAtivo;
+        const vidaBaseOponenteAntesAtaque = adversario.personagemAtivo?.vida ?? 100;
+        const vidaBaseAtacanteAntesAtaque = personagem.vida ?? 100;
+
+        if (danoTotal > 0 && danoFinal === 0) {
+            desbloquearConquista(adversario.idUsuario, "paredeDeFerro");
+        }
+
+        if (campoAtivo?.nome === "Fiery Field" && danoFinal > 0) {
+            desbloquearConquista(atual.idUsuario, "campoPerfeito");
+        }
+
+        if (
+            campoAtivo?.nome === "Tidal Seas" &&
+            vidaOponenteAntesAtaque > 0 &&
+            danoTotal >= vidaOponenteAntesAtaque &&
+            danoFinal < vidaOponenteAntesAtaque
+        ) {
+            desbloquearConquista(adversario.idUsuario, "calmaAntesDaTempestade");
+        }
+
         // Aplica o dano ao oponente.
         adversario = {
             ...adversario,
             hpAtivo: adversario.hpAtivo - danoFinal
         };
 
+        if (danoFinal > 0) {
+            estatisticasConquistas.current.recebeuDano[adversario.idUsuario] = true;
+            registrarProgressoTurno(atual.idUsuario, "dano");
+        }
+
+        if (
+            adversario.hpAtivo > 0 &&
+            adversario.hpAtivo < 10
+        ) {
+            desbloquearConquista(adversario.idUsuario, "porUmFio");
+        }
+
+        if (
+            danoFinal > vidaOponenteAntesAtaque &&
+            vidaOponenteAntesAtaque > 0
+        ) {
+            desbloquearConquista(atual.idUsuario, "overkill");
+        }
+
+        if (
+            personagem.nome === "Assassin" &&
+            vidaOponenteAntesAtaque === vidaBaseOponenteAntesAtaque &&
+            adversario.hpAtivo <= 0
+        ) {
+            desbloquearConquista(atual.idUsuario, "precisaoCirurgica");
+        }
+
+        if (
+            adversario.hpAtivo <= 0 &&
+            !estatisticasConquistas.current.recebeuDano[atual.idUsuario]
+        ) {
+            desbloquearConquista(atual.idUsuario, "intocavel");
+        }
+
+        if (
+            adversario.personagemAtivo?.nome === "Sword Legend" &&
+            personagem.nome === "Sword Apprentice" &&
+            adversario.hpAtivo <= 0
+        ) {
+            desbloquearConquista(atual.idUsuario, "derrubandoALenda");
+        }
+
+        if (
+            vidaOponenteAntesAtaque === vidaBaseOponenteAntesAtaque &&
+            atual.hpAtivo === vidaBaseAtacanteAntesAtaque &&
+            vidaBaseOponenteAntesAtaque > vidaBaseAtacanteAntesAtaque &&
+            adversario.hpAtivo <= 0
+        ) {
+            desbloquearConquista(atual.idUsuario, "superacaoDeVida");
+        }
+
+        if (
+            personagem.nome === "Sword Legend" &&
+            atual.ignorarDefesa &&
+            bonusDano > 0 &&
+            danoFinal > 0
+        ) {
+            desbloquearConquista(atual.idUsuario, "espadachimSupremo");
+        }
+
         // Aplica a cura do próprio personagem.
+        const vidaAntesDaCura = atual.hpAtivo;
+        const vidaFaltanteAntesDaCura = Math.max(0, vidaBase - vidaAntesDaCura);
+        const curaReal = Math.min(curaPropria, vidaFaltanteAntesDaCura);
+
+        if (curaPropria > vidaFaltanteAntesDaCura) {
+            desbloquearConquista(atual.idUsuario, "desperdicio");
+        }
+
         atual = {
             ...atual,
             hpAtivo: Math.min(atual.hpAtivo + curaPropria, vidaBase)
         };
+
+        if (curaReal > 0) {
+            registrarProgressoTurno(atual.idUsuario, "cura");
+        }
+
+        if (
+            vidaAntesDaCura < vidaBase / 2 &&
+            atual.hpAtivo >= vidaBase
+        ) {
+            desbloquearConquista(atual.idUsuario, "segundoFolego");
+        }
+
+        if (
+            curaReal > 0 &&
+            campoAtivo?.nome === "Forest Glade" &&
+            atual.itensAtivos.lifeDrainingFlower
+        ) {
+            desbloquearConquista(atual.idUsuario, "regeneracaoAbsoluta");
+        }
 
         // Reflexão de dano.
         let substituicaoPendente = false;
@@ -1465,6 +1928,14 @@ export default function TelaBatalha() {
                 hpAtivo: atual.hpAtivo - danoRefletido
             };
 
+            if (danoRefletido > 0) {
+                estatisticasConquistas.current.recebeuDano[atual.idUsuario] = true;
+            }
+
+            if (atual.hpAtivo > 0 && atual.hpAtivo < 10) {
+                desbloquearConquista(atual.idUsuario, "porUmFio");
+            }
+
             registrarLog(
                 `Contra-ataque. ${atual.nome} recebeu ${danoRefletido} de volta`
             );
@@ -1476,6 +1947,13 @@ export default function TelaBatalha() {
             adversario = morteJogador.adversario;
 
             morteJogador.logs.forEach(registrarLog);
+
+            if (
+                (morteJogador.finalizada || morteJogador.aguardandoSubstituicao) &&
+                adversario.personagemAtivo?.nome === "Dragon Knight"
+            ) {
+                desbloquearConquista(adversario.idUsuario, "contraAtaquePerfeito");
+            }
 
             if (morteJogador.finalizada) {
                 oponenteAtingiuVitoria = true;
@@ -1596,6 +2074,60 @@ export default function TelaBatalha() {
         const nomeVencedor = vencedorEhJogador1
             ? jogador1.nome
             : jogador2.nome;
+
+        const jogadorPerdedor = vencedorEhJogador1 ? jogador2 : jogador1;
+
+        desbloquearConquista(idVencedor, "oPrimeiroPasso");
+
+        if (typeof window !== "undefined") {
+            const chaveVitorias = `cardgame_vitorias_${idVencedor}`;
+            const totalVitorias = Number(localStorage.getItem(chaveVitorias) ?? "0") + 1;
+            const chaveUltimoResultado = `cardgame_ultimo_resultado_${idVencedor}`;
+            const ultimoResultado = localStorage.getItem(chaveUltimoResultado);
+
+            localStorage.setItem(chaveVitorias, String(totalVitorias));
+            localStorage.setItem(chaveUltimoResultado, "vitoria");
+
+            if (totalVitorias >= 10) {
+                desbloquearConquista(idVencedor, "caminhoDaMaestria");
+            }
+
+            if (ultimoResultado === "vitoria") {
+                desbloquearConquista(idVencedor, "noEmbolo");
+            }
+
+            localStorage.setItem(
+                `cardgame_ultimo_resultado_${idPerdedor}`,
+                "derrota"
+            );
+        }
+
+        if (
+            jogadorPerdedor.personagensDerrotados >= 2
+        ) {
+            desbloquearConquista(idVencedor, "aGrandeVirada");
+        }
+
+        if (
+            (estatisticasConquistas.current.personagensInvocados[idVencedor] ?? 0) === 1
+        ) {
+            desbloquearConquista(idVencedor, "solo");
+        }
+
+        if (!estatisticasConquistas.current.suporteUsado[idVencedor]) {
+            desbloquearConquista(idVencedor, "autonomo");
+        }
+
+        if ((estatisticasConquistas.current.orbExplosoes[idVencedor] ?? 0) >= 3) {
+            desbloquearConquista(idVencedor, "autoSabotagem");
+        }
+
+        if (
+            estatisticasConquistas.current.errosRocky[idVencedor] &&
+            estatisticasConquistas.current.errosFoggy[idVencedor]
+        ) {
+            desbloquearConquista(idVencedor, "nadaMePara");
+        }
 
         setVencedor(nomeVencedor);
         setBatalhaFinalizada(true);

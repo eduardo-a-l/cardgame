@@ -5,6 +5,7 @@ import { Botao } from "@/components/ui/Botao";
 import Modal from "@/components/layout/Modal";
 import { useEffect, useState, Suspense } from "react";
 import { corTipo } from "@/app/loja/page";
+import { desbloquearConquista } from "@/lib/conquistas";
 
 interface ItemInventario {
     idInventario?: number;
@@ -135,6 +136,8 @@ function DescricaoConteudo() {
                 });
                 return;
             }
+
+            desbloquearConquista(Number(usuario.idUsuario), "mercador");
 
             setModal({
                 aberto: true,
