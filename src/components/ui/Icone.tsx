@@ -1,4 +1,5 @@
 import { ComponentProps } from "react";
+import Image from "next/image";
 
 import IconeLeaderboard from "@/assets/icons/leaderboard.svg";
 import IconeUsuario from "@/assets/icons/user.svg";
@@ -59,6 +60,35 @@ import IconeSolo from "@/assets/conquistas/solo.svg";
 import IconeSuperacaoDeVida from "@/assets/conquistas/superacao-de-vida.svg";
 import IconeTurnoPerfeito from "@/assets/conquistas/turno-perfeito.svg";
 import IconeVariedade from "@/assets/conquistas/variedade.svg";
+
+import PixelAlchemist from "@/assets/pixel_arts/alchemist.png";
+import PixelAssassin from "@/assets/pixel_arts/assassin.png";
+import PixelAttackInjection from "@/assets/pixel_arts/attack-injection.png";
+import PixelDefenseInjection from "@/assets/pixel_arts/defense-injection.png";
+import PixelDevouringOrb from "@/assets/pixel_arts/devouring-orb.png";
+import PixelDragonKnight from "@/assets/pixel_arts/dragon-knight.png";
+import PixelFieryField from "@/assets/pixel_arts/fiery-field.png";
+import PixelFocusLens from "@/assets/pixel_arts/focus-lens.png";
+import PixelFoggyValley from "@/assets/pixel_arts/foggy-valley.png";
+import PixelForestGlade from "@/assets/pixel_arts/forest-glade.png";
+import PixelHealInjection from "@/assets/pixel_arts/heal-injection.png";
+import PixelKingsBlessing from "@/assets/pixel_arts/kings-blessing.png";
+import PixelLifeDrainingFlower from "@/assets/pixel_arts/life-draining-flower.png";
+import PixelMagicApprentice from "@/assets/pixel_arts/magic-apprentice.png";
+import PixelMagicMaster from "@/assets/pixel_arts/magic-master.png";
+import PixelQueensBlessing from "@/assets/pixel_arts/queens-blessing.png";
+import PixelReaper from "@/assets/pixel_arts/reaper.png";
+import PixelResearchersHelp from "@/assets/pixel_arts/researchers-help.png";
+import PixelRigidShell from "@/assets/pixel_arts/rigid-shell.png";
+import PixelRockyHills from "@/assets/pixel_arts/rocky-hills.png";
+import PixelSharpClaws from "@/assets/pixel_arts/sharp-claws.png";
+import PixelSmokescreen from "@/assets/pixel_arts/smokescreen.png";
+import PixelSwordApprentice from "@/assets/pixel_arts/sword-apprentice.jpeg";
+import PixelSwordLegend from "@/assets/pixel_arts/sword-legend.png";
+import PixelSwordMaster from "@/assets/pixel_arts/sword-master.png";
+import PixelThief from "@/assets/pixel_arts/thief.png";
+import PixelTidalSeas from "@/assets/pixel_arts/tidal-seas.png";
+import PixelToxicSwamp from "@/assets/pixel_arts/toxic-swamp.png";
 
 const icones = {
   leaderboard: IconeLeaderboard,
@@ -124,9 +154,47 @@ const icones = {
 
 export type NomeIcone = keyof typeof icones;
 
+const pixelArts = {
+    alchemist: PixelAlchemist,
+    assassin: PixelAssassin,
+    attackInjection: PixelAttackInjection,
+    defenseInjection: PixelDefenseInjection,
+    devouringOrb: PixelDevouringOrb,
+    dragonKnight: PixelDragonKnight,
+    fieryField: PixelFieryField,
+    focusLens: PixelFocusLens,
+    foggyValley: PixelFoggyValley,
+    forestGlade: PixelForestGlade,
+    healInjection: PixelHealInjection,
+    kingsBlessing: PixelKingsBlessing,
+    lifeDrainingFlower: PixelLifeDrainingFlower,
+    magicApprentice: PixelMagicApprentice,
+    magicMaster: PixelMagicMaster,
+    queensBlessing: PixelQueensBlessing,
+    reaper: PixelReaper,
+    researchersHelp: PixelResearchersHelp,
+    rigidShell: PixelRigidShell,
+    rockyHills: PixelRockyHills,
+    sharpClaws: PixelSharpClaws,
+    smokescreen: PixelSmokescreen,
+    swordApprentice: PixelSwordApprentice,
+    swordLegend: PixelSwordLegend,
+    swordMaster: PixelSwordMaster,
+    thief: PixelThief,
+    tidalSeas: PixelTidalSeas,
+    toxicSwamp: PixelToxicSwamp
+} as const;
+
+export type NomePixelArt = keyof typeof pixelArts;
+
 interface IconeProps extends ComponentProps<"svg"> {
   nome: NomeIcone;
   tamanho?: number | string;
+}
+
+interface PixelArtProps extends Omit<ComponentProps<typeof Image>, "src" | "alt" | "width" | "height"> {
+    nome: NomePixelArt;
+    tamanho?: number | string;
 }
 
 export function Icone({
@@ -150,4 +218,54 @@ export function Icone({
       {...props}
     />
   );
+}
+
+export function PixelArt({
+    nome,
+    tamanho = 100,
+    className = "",
+    style,
+    ...props
+}: PixelArtProps) {
+    const ImagemSelecionada = pixelArts[nome];
+
+    return (
+        <Image
+            src={ImagemSelecionada}
+            alt={nome}
+            width={ImagemSelecionada.width}
+            height={ImagemSelecionada.height}
+            className={className}
+            unoptimized
+            style={{
+                width: tamanho,
+                height: tamanho,
+                imageRendering: "pixelated",
+                ...style
+            }}
+            {...props}
+        />
+    );
+}
+
+export function acharNomePixelArt(nome: string): NomePixelArt {
+    const nomeFormatado = nome
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .replace(/[^a-z0-9 ]/g, "")
+        .trim()
+        .split(/\s+/)
+        .map((palavra, indice) =>
+            indice === 0
+                ? palavra
+                : palavra.charAt(0).toUpperCase() + palavra.slice(1)
+        )
+        .join("");
+
+    if (!Object.prototype.hasOwnProperty.call(pixelArts, nomeFormatado)) {
+        throw new Error(`Pixel Art não encontrado para: "${nome}"`);
+    }
+
+    return nomeFormatado as NomePixelArt;
 }

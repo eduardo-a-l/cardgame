@@ -4,6 +4,7 @@ import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Modal from "@/components/layout/Modal";
 import { Botao } from "@/components/ui/Botao";
+import { PixelArt, acharNomePixelArt } from "@/components/ui/Icone";
 
 interface Carta {
   idInventario: number;
@@ -365,6 +366,11 @@ function MontarBaralhoConteudo() {
                 className={getEstiloCarta(carta.tipo)}
                 onClick={() => removerCarta(index)}
               >
+                <PixelArt
+                    nome={acharNomePixelArt(carta.nome)}
+                    tamanho={96}
+                    className="mb-1 border-3 border-[#C8911A] rounded-xl"
+                />
                 <p className="text-sm xl:text-xl">{carta.nome}</p>
               </div>
             ))}
@@ -390,8 +396,13 @@ function MontarBaralhoConteudo() {
                 return (
                   <div
                     key={carta.idInventario}
-                    className="w-[clamp(101.25px,7.031vw,135px)] aspect-[209/301.4] rounded-[1vw] flex items-center justify-center bg-[#181921] border-[3px] border-[#686868] text-gray-600 opacity-60 p-1 text-center select-none"
+                    className="w-[clamp(101.25px,7.031vw,135px)] aspect-[209/301.4] rounded-[1vw] flex flex-col items-center justify-center bg-[#181921] border-[3px] border-[#686868] text-gray-600 opacity-60 p-1 text-center select-none"
                   >
+                    <PixelArt
+                        nome={acharNomePixelArt(carta.nome)}
+                        tamanho={96}
+                        className="mb-1 border-3 border-[#C8911A] rounded-xl"
+                    />
                     <p className="text-sm 2xl:text-xl">{carta.nome}</p>
                   </div>
                 );
@@ -403,6 +414,11 @@ function MontarBaralhoConteudo() {
                   className={getEstiloCarta(carta.tipo)}
                   onClick={() => adicionarCarta(carta)}
                 >
+                    <PixelArt
+                          nome={acharNomePixelArt(carta.nome)}
+                          tamanho={96}
+                          className="mb-1 border-3 border-[#C8911A] rounded-xl"
+                      />
                     <p className="text-sm 2xl:text-xl">{carta.nome}</p>
                 </div>
               );

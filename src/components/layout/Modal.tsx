@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import type { Pacote } from "@/app/loja/page"
 import { corTipo } from "@/app/loja/page"
+import { PixelArt, acharNomePixelArt } from "@/components/ui/Icone";
 
 export interface CartaModal {
     idCarta: number;
@@ -84,7 +85,7 @@ export default function Modal({
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="modal-titulo"
-                className={`relative flex max-h-[90vh] flex-col overflow-y-auto rounded-2xl border-2 border-[#C8911A] bg-[#1B1B2F] p-6 text-white shadow-2xl sm:p-8 ${ tipo === "pacote" ? "w-full max-w-5xl p-10 sm:p-12" : tipo === "carta" ? (carta?.tipo === "Personagem" ? "w-full max-w-[600px]" : "w-full max-w-[450px]") : "w-full max-w-md" }`}
+                className={`relative flex max-h-[90vh] flex-col overflow-y-auto rounded-2xl border-2 border-[#C8911A] bg-[#1B1B2F] p-6 text-white shadow-2xl sm:p-8 ${ tipo === "pacote" ? "w-full max-w-5xl p-10 sm:p-12" : tipo === "carta" ? "w-full max-w-[600px]" : "w-full max-w-md" }`}
             >
                 <button
                     type="button"
@@ -125,14 +126,10 @@ export default function Modal({
                                         className="mb-4 flex aspect-[209/301.4] w-full items-center justify-center rounded-lg border bg-[#1B1B2F]"
                                         style={{ borderColor: cor }}
                                     >
-                                        <span
-                                            className="text-3xl font-bold"
-                                            style={{ color: cor }}
-                                        >
-                                            {carta.raridade === "Lendário"
-                                                ? "★"
-                                                : "✦"}
-                                        </span>
+                                        <PixelArt
+                                            nome={acharNomePixelArt(carta.nome)}
+                                            tamanho={128}
+                                        />
                                     </div>
 
                                     <p className="w-full break-words font-semibold">
@@ -178,7 +175,13 @@ export default function Modal({
 
                 {tipo === "carta" && carta && (
 
-                    <div className="space-y-3 text-center text-[clamp(18px,1.5vw,29px)]">
+                    <div className="flex flex-col space-y-3 text-center text-[clamp(18px,1.5vw,29px)] items-center overflow-y-auto inventory-scrollbar">
+
+                        <PixelArt
+                            nome={acharNomePixelArt(carta.nome)}
+                            tamanho={320}
+                            className="mt-3 mb-4 border-3 border-[#C8911A] rounded-xl"
+                        />
 
                         <p>Tipo: {carta.tipo}</p>
                         <p>
