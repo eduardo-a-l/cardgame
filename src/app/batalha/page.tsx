@@ -120,7 +120,7 @@ function embaralharCartas(cartas: Carta[]): Carta[] {
     const resultado = [...cartas];
 
     for (let i = resultado.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
+        const j = Math.floor(gerarNumeroAleatorio() * (i + 1));
 
         [resultado[i], resultado[j]] = [
             resultado[j],
@@ -152,6 +152,10 @@ function prepararMaoInicial(cartas: Carta[]): { mao: Carta[];  deck: Carta[]; }
         mao,
         deck: deckEmbaralhado
     };
+}
+
+function gerarNumeroAleatorio(): number {
+    return Math.random();
 }
 
 export default function TelaBatalha() {
@@ -372,7 +376,7 @@ export default function TelaBatalha() {
                     turnoPerfeito: {},
                 });
 
-                const primeiroJogadorEhJ1 = Math.random() < 0.5;
+                const primeiroJogadorEhJ1 = gerarNumeroAleatorio() < 0.5;
 
                 // A preparação inicial ainda precisa permitir
                 // que cada jogador escolha seu personagem.
@@ -779,7 +783,7 @@ export default function TelaBatalha() {
 
                         if (adversarioAtualizado.mao.length > 0) {
                             const indiceAleatorio = Math.floor(
-                                Math.random() * adversarioAtualizado.mao.length
+                                gerarNumeroAleatorio() * adversarioAtualizado.mao.length
                             );
 
                             const cartaRevelada =
@@ -1062,7 +1066,7 @@ export default function TelaBatalha() {
                 for (let i = 0; i < 3; i++) {
                     if (atual.mao.length === 0) break;
 
-                    const indice = Math.floor(Math.random() * atual.mao.length);
+                    const indice = Math.floor(gerarNumeroAleatorio() * atual.mao.length);
                     const removida = atual.mao[indice];
 
                     atual = {
@@ -1369,7 +1373,7 @@ export default function TelaBatalha() {
             );
 
         for (const efeito of chancesErro) {
-            if (Math.random() < efeito.chance) {
+            if (gerarNumeroAleatorio() < efeito.chance) {
                 errou = true;
 
                 if (efeito.nome === "Rocky Hills") {
@@ -1453,7 +1457,7 @@ export default function TelaBatalha() {
                 if (numeroAcao === 1) {
                     danoBase = 15;
 
-                    if (Math.random() * 100 < 10) {
+                    if (gerarNumeroAleatorio() * 100 < 10) {
                         bonusDano = 5;
                     }
                 }
@@ -1576,7 +1580,7 @@ export default function TelaBatalha() {
                 if (numeroAcao === 1) {
                     danoBase = 20;
 
-                    if (Math.random() * 100 < 50) {
+                    if (gerarNumeroAleatorio() * 100 < 50) {
                         bonusDano = 5;
                     }
                 }
@@ -1587,7 +1591,7 @@ export default function TelaBatalha() {
                     danoBase = 10;
                     curaPropria = 10;
 
-                    if (Math.random() * 100 < 20) {
+                    if (gerarNumeroAleatorio() * 100 < 20) {
                         bonusDano = 10;
                     }
                 }
@@ -1597,7 +1601,7 @@ export default function TelaBatalha() {
                 if (numeroAcao === 1) {
                     danoBase = 10;
 
-                    if (Math.random() * 100 < 20) {
+                    if (gerarNumeroAleatorio() * 100 < 20) {
                         adversario = {
                             ...adversario,
                             buffDano: { valor: 0, duracao: 0 },
@@ -1667,7 +1671,7 @@ export default function TelaBatalha() {
 
                     const chanceCritica = 40 + atual.bonusChanceCrit;
 
-                    if (Math.random() * 100 < chanceCritica) {
+                    if (gerarNumeroAleatorio() * 100 < chanceCritica) {
                         bonusDano = 15;
                     }
                     atual = {
