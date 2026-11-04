@@ -1,4 +1,3 @@
-
 export type DificuldadeConquista = "Fácil" | "Médio" | "Difícil" | "Difícil+";
 
 export interface Conquista {
