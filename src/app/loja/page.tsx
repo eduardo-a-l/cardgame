@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Botao } from "@/components/ui/Botao";
 import Modal from "@/components/layout/Modal";
 import type { CartaModal } from "@/components/layout/Modal";
+import { PixelArt, acharNomePixelArt } from "@/components/ui/Icone";
 
 interface ItemLoja {
     idLojaItem: number,
@@ -272,6 +273,11 @@ export default function TelaLoja() {
                                     className="loja-hover w-full max-w-[209px] aspect-[190/274] border-[5px] border-[#686868] rounded-[33px] shadow-sm flex flex-col items-center justify-center"
                                     style={{ backgroundColor: corTipo(item.carta_tipo) }}
                                 >
+                                    <PixelArt
+                                        nome={acharNomePixelArt(item.carta_nome)}
+                                        tamanho={160}
+                                        className="mt-2 border-3 border-[#C8911A] rounded-xl"
+                                    />
                                     <p className="text-[clamp(24px,1.5vw,29px)] text-center ">{item.carta_nome}</p>
                                     <p className="text_dinheiro text-[clamp(24px,1.5vw,29px)] text-center ">{ Math.floor(item.carta_precoPadrao * (1 - item.desconto)) }G</p>
                                 </div>

@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 
 import { Botao } from "@/components/ui/Botao";
 import { NomeIcone, Icone } from "@/components/ui/Icone";
+import { PixelArt, acharNomePixelArt } from "@/components/ui/Icone";
 
 import Modal, { CartaModal } from "@/components/layout/Modal";
 
@@ -1308,7 +1309,7 @@ export default function TelaBatalha() {
     }
 
     function registrarLog(mensagem: string) {
-        setLogs(anterior => [mensagem, ...anterior].slice(0, 15));
+        setLogs(anterior => [mensagem, ...anterior].slice(0, 20));
     }
 
     function executarAcao(numeroAcao: number = 1) {
@@ -2201,14 +2202,14 @@ export default function TelaBatalha() {
         if (jogador.buffDano.valor > 0) {
             efeitos.push({
                 texto: `ATK +${jogador.buffDano.valor} (${jogador.buffDano.duracao})`,
-                cor: "#FF4500"
+                cor: "#f13210"
             });
         }
 
         if (jogador.buffDefesa.valor > 0) {
             efeitos.push({
                 texto: `DEF +${jogador.buffDefesa.valor} (${jogador.buffDefesa.duracao})`,
-                cor: "#1E90FF"
+                cor: "#10cff1"
             });
         }
 
@@ -2222,14 +2223,14 @@ export default function TelaBatalha() {
         if (jogador.refletirDano) {
             efeitos.push({
                 texto: "REFLEXÃO",
-                cor: "#9932CC"
+                cor: "#2c2a2c"
             });
         }
 
         if (jogador.duracaoFocusLens > 0) {
             efeitos.push({
                 texto: `FOCUS (${jogador.duracaoFocusLens})`,
-                cor: "#228B22"
+                cor: "#3d4181"
             });
         }
 
@@ -2241,7 +2242,7 @@ export default function TelaBatalha() {
         }
 
         if (jogador.itensAtivos.sharpClaws) {
-            efeitos.push({ texto: "SHARP CLAWS", cor: "#B8860B" });
+            efeitos.push({ texto: "SHARP CLAWS", cor: "#9b9ca1" });
         }
 
         if (jogador.itensAtivos.rigidShell) {
@@ -2262,7 +2263,7 @@ export default function TelaBatalha() {
         return efeitos;
     }
 
-    function exibirCarta(borda: string, largura: string[], 
+    function exibirCarta(borda: string, largura: (string | number)[], 
                          altura: string, nomeImagem: string, 
                          texto: string, tamanhoTexto: string,
                          borderRadius: string, fundo: string, 
@@ -2275,13 +2276,13 @@ export default function TelaBatalha() {
             click = "cursor-pointer"
         if (proporcional)
             altura = "aspect-[130/184]"
-
         return (
-            <div onClick={clickable ? onClick : undefined} className={`${largura[0]} ${altura} border-[5px] ${borda} ${borderRadius} ${fundo} flex flex-col items-center justify-center text-center shrink-0 ${click}`}>
+            <div onClick={clickable ? onClick : undefined} className={`${largura[0]} ${altura} border-[5px] ${borda} ${borderRadius} ${fundo} flex flex-col items-center justify-around text-center shrink-0 ${click}`}>
                 {nomeImagem !== "" && (
-                    <Icone
-                        nome={nomeImagem as NomeIcone}
+                    <PixelArt
+                        nome={acharNomePixelArt(nomeImagem)}
                         tamanho={largura[1]}
+                        className="mt-2 border-3 border-[#C8911A] rounded-xl"
                     />
                 )}
 
@@ -2359,7 +2360,7 @@ export default function TelaBatalha() {
                         
                         <div className="flex flex-col">
                             <h1 className="text_dinheiro text-[clamp(25px,2.0833vw,40px)]">Você</h1>
-                            {exibirCarta("border-[#C8911A]", ["w-[clamp(180px,13.0208vw,250px)]", ""], "h-[clamp(240px,31.4815vh,340px)]", "", jogadorDaVez.personagemAtivo?.nome ?? "Selecione um personagem", jogadorDaVez.personagemAtivo ? "text-[40px]" : "text-[25px]", "rounded-[30px]", "bg-[#21366B]", jogadorDaVez.personagemAtivo !== null, true, jogadorDaVez.personagemAtivo ? () => abrirModalCarta(jogadorDaVez.personagemAtivo!, false) : undefined)}
+                            {exibirCarta("border-[#C8911A]", ["w-[clamp(180px,13.0208vw,250px)]", 192], "h-[clamp(240px,31.4815vh,340px)]", jogadorDaVez.personagemAtivo?.nome ?? "", jogadorDaVez.personagemAtivo?.nome ?? "Selecione um personagem", jogadorDaVez.personagemAtivo ? "text-[40px]" : "text-[25px]", "rounded-[30px]", "bg-[#21366B]", jogadorDaVez.personagemAtivo !== null, true, jogadorDaVez.personagemAtivo ? () => abrirModalCarta(jogadorDaVez.personagemAtivo!, false) : undefined)}
                         </div>
 
                         <div className="flex flex-col justify-start gap-[10px] h-[clamp(240px,31.4815vh,340px)] mt-[50px] min-w-0">
@@ -2405,7 +2406,7 @@ export default function TelaBatalha() {
                             <h1 className="text-[clamp(25px,2.0833vw,40px)]" style={{ color: "#B4B4B4" }}>
                                 {oponente.nome}
                             </h1>
-                            {exibirCarta("border-[#C8911A]", ["w-[clamp(180px,13.0208vw,250px)]", ""], "h-[clamp(240px,31.4815vh,340px)]", "", oponente.personagemAtivo?.nome ?? "Ainda não escolhido", oponente.personagemAtivo ? "text-[40px]" : "text-[25px]", "rounded-[30px]", "bg-[#21366B]", oponente.personagemAtivo !== null, true, oponente.personagemAtivo ? () => abrirModalCarta(oponente.personagemAtivo!, false) : undefined)}
+                            {exibirCarta("border-[#C8911A]", ["w-[clamp(180px,13.0208vw,250px)]", 192], "h-[clamp(240px,31.4815vh,340px)]", oponente.personagemAtivo?.nome ?? "", oponente.personagemAtivo?.nome ?? "Ainda não escolhido", oponente.personagemAtivo ? "text-[40px]" : "text-[25px]", "rounded-[30px]", "bg-[#21366B]", oponente.personagemAtivo !== null, true, oponente.personagemAtivo ? () => abrirModalCarta(oponente.personagemAtivo!, false) : undefined)}
                         </div>
 
                         <div className="flex flex-col justify-start gap-[10px] h-[clamp(240px,31.4815vh,340px)] mt-[50px] min-w-0">
@@ -2449,7 +2450,7 @@ export default function TelaBatalha() {
 
                                 <div key={`${carta.idCarta}-${indice}`} className="shrink-0">
 
-                                    {exibirCarta("border-[#686868]", ["w-[clamp(100px,7.8125vw,150px)]", ""], "h-[clamp(150px,20.3704vh,220px)]", "", carta.nome ?? "Carta", "text-[20px]", "rounded-[25px]", `bg-[${corTipo(carta.tipo ?? "Personagem")}]`, true, false, () => selecionarCarta(indice))}
+                                    {exibirCarta("border-[#686868]", ["w-[clamp(100px,7.8125vw,150px)]", 96], "h-[clamp(150px,20.3704vh,220px)]", carta.nome ?? "", carta.nome ?? "Carta", "text-[20px]", "rounded-[25px]", `bg-[${corTipo(carta.tipo ?? "Personagem")}]`, true, false, () => selecionarCarta(indice))}
                                 
                                 </div>
 

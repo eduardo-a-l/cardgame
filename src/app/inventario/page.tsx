@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Botao } from "@/components/ui/Botao";
+import { PixelArt, acharNomePixelArt } from "@/components/ui/Icone";
 
 interface Carta {
     idInventario: number;
@@ -126,13 +127,18 @@ export default function TelaInventario() {
                             <div
                                 key={carta.idInventario}
                                 onClick={() => router.push(`/carta/${carta.idInventario}/descricao?origem=inventario`)}
-                                className={`relative w-full max-w-[209px] aspect-[190/274] ${carta.tipo == "Personagem" ? "bg-[#21366B]" : carta.tipo == "Suporte" ? "bg-[#53216B]" : "bg-[#216B35]"} border-[5px] border-[#686868] rounded-[33px] shadow-sm flex items-center justify-center text-white text-[21px] kinda-small:text-[30px] pretty-wide:text-[38px] text-center cursor-pointer transition-transform hover:scale-105`}
+                                className={`relative w-full max-w-[209px] aspect-[190/274] ${carta.tipo == "Personagem" ? "bg-[#21366B]" : carta.tipo == "Suporte" ? "bg-[#53216B]" : "bg-[#216B35]"} border-[5px] border-[#686868] rounded-[33px] shadow-sm flex flex-col items-center text-white text-[21px] kinda-small:text-[30px] pretty-wide:text-[38px] text-center cursor-pointer transition-transform hover:scale-105`}
                             >
                                 {estaEmBaralho && (
                                     <span className="absolute top-3 right-3 bg-[#C8911A] text-black text-[10px] font-bold px-2 py-1 rounded-full shadow-md border border-black pointer-events-none">
                                         Em Baralho
                                     </span>
                                 )}
+                                <PixelArt
+                                    nome={acharNomePixelArt(carta.nome)}
+                                    tamanho={128}
+                                    className="mt-6 border-3 border-[#C8911A] rounded-xl mb-3"
+                                />
                                 { carta.nome != "Researcher's Help" 
                                 ?
                                     <span className="p-2 break-words">
