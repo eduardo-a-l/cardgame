@@ -35,9 +35,13 @@ interface Conquista {
     dataDesbloqueio: string | null;
 }
 
-interface ConquistaAPI extends Conquista {}
+type ConquistaAPI = Conquista;
 
-function normalizarCodigo(codigo: string): string {
+function normalizarCodigo(codigo: string | null | undefined): string {
+    if (typeof codigo !== "string") {
+        return "";
+    }
+
     const normalizado = codigo
         .normalize("NFD")
         .replace(/[\u0300-\u036f]/g, "")
@@ -169,13 +173,17 @@ function PerfilConteudo() {
                     return;
                 }
 
-                if (!Number.isFinite(idAlvo) || idAlvo <= 0) {
+                if (
+                    idAlvo === null ||
+                    !Number.isFinite(idAlvo) ||
+                    idAlvo <= 0
+                ) {
                     throw new Error("ID de usuário inválido.");
                 }
 
                 const ehDono =
                     usuarioLocal !== null &&
-                    usuarioLocal.idUsuario === idAlvo;
+                    Number(usuarioLocal.idUsuario) === idAlvo;
 
                 idAlvoAtual = idAlvo;
                 ehDonoAtual = ehDono;
